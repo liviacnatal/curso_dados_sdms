@@ -1,21 +1,17 @@
 ---
-title: "Mapping Session"
+title: "Análise espacial usando R"
 author: "Juliano Palacios Abrantes"
-date: "05/11/2019"
+date: "Última atualização `r Sys.Date()`"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
+library(here)
 
-ipak <- function(pkg){
-    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-    if (length(new.pkg)) 
-        install.packages(new.pkg, dependencies = TRUE)
-    sapply(pkg, require, character.only = TRUE)
-} #Best function of your life.
-# usage
+source(paste0(here(),"/sessoes/funcoes_de_apoio/instalar_pacotes.R"))
+
 packages <- c("tidyverse", 
               "sf", # for loading shapefiles
               "sp",
@@ -27,10 +23,6 @@ packages <- c("tidyverse",
 
 ipak(packages)
 
-# devtools::install_github("raquamaps/aquamapsdata")
-# download_db(force=TRUE)
-
-
 # Needs to convert to D2
 # Fix new updates of sf package
 sf::sf_use_s2(use_s2 = FALSE)
@@ -39,9 +31,12 @@ sf::sf_use_s2(use_s2 = FALSE)
 
 ## Map sources
 
-There are tons of free map data sources and a bunch of R packages that integrate it well. One of the main sources I use is [Natural Earth 10-m-resolution coastline shapefile](http://www.naturalearthdata.com/downloads/10m-physical-vectors/). You can visit the website to find different versions or types of files, and they mainly come in three resolution formats: 10m (fine), 50m (medium), 110m (coarse). The resolution translates directly into mapping and processing speed with finer resolution taking much longer. As I'm working through lots of examples, I'll use the coarser/lower resolution maps for most of these.
+Existem inúmeras fontes de dados de mapas gratuitas e vários pacotes R que os integram bem. Uma das principais fontes que utilizo é o [shapefile do litoral com resolução de 10 m da Natural Earth] (http://www.naturalearthdata.com/downloads/10m-physical-vectors/). Você pode visitar o site para encontrar diferentes versões ou tipos de arquivos, e eles vêm principalmente em três formatos de resolução: 10m (fino), 50m (médio), 110m (grosso). A resolução se traduz diretamente em velocidade de mapeamento e processamento, com resoluções mais precisas demorando muito mais tempo. Como estou trabalhando em vários exemplos, usarei os mapas de resolução mais grosseira/mais baixa para a maioria deles.
 
-Natural Earth also has its own R package called `rnaturalearth`
+
+### Global
+
+Natural Earth também tem seu próprio pacote R chamado `rnaturalearth`
 
 ```{r, eval = T}
 
@@ -52,7 +47,7 @@ land110 <- ne_download(scale = 110,
 plot(land110)
 ```
 
-If you want to fill in the land, you should use a land shapefile. If you want only the outline of the continents/islands, use a coastline file. 
+Se você quiser preencher o terreno, você deve usar um shapefile de terreno. Se você quiser apenas o contorno dos continentes/ilhas, use um arquivo de litoral.
 
 ```{r, eval = T}
 
@@ -62,7 +57,7 @@ coast110 <- ne_download(scale = 110,
 sp::plot(coast110)
 ```
 
-They originally look the same, but if you convert it to a "simple features" object (sf), you can see the difference. 
+Eles originalmente parecem iguais, mas se você convertê-los em um objeto de "recursos simples" (`sf`), poderá ver a diferença.
 
 ```{r, eval = T}
 
@@ -79,16 +74,11 @@ ggplot(coast110_sf) +
   geom_sf(color="blue")
 ```
 
-Alternatively, you might want country level data like in making a world map. 
+Alternativamente, você pode querer dados em nível de país, como ao fazer um mapa mundial.
 
 ```{r, eval = T}
 
 country110 <- ne_countries() #natural earth countries
-
-x <- ne_download(scale=110,
-                 type="countries", 
-                 category="cultural", 
-                 returnclass="sf")
 
 country110_sf <- st_as_sf(country110)
 
@@ -104,73 +94,73 @@ ggplot(country110_sf) +
 
 
 
-
-
 ```
 
-But, it's hard to see what's going on at a smaller level with this world level data. You have two options:  
+### Regional
 
-1. Zoom in to a subset of the current map.   
-1. Find a smaller scale map that is of your area of interest.   
+Mas é difícil ver o que está acontecendo em um nível menor com esses dados de nível mundial. Você tem duas opções:  
 
-Another good source for country level data including subunits is http://www.diva-gis.org/gdata  
+1. Amplie um subconjunto do mapa atual.   
+1. Encontre um mapa em menor escala que seja da sua área de interesse.   
+
+Outra boa fonte de dados a nível de país, incluindo subunidades, é http://www.diva-gis.org/gdata
 
 
 ```{r crop, eval = T}
 
-dims <- c(xmin=-9.9,
-          xmax=5.10, 
-          ymin=35.8,
-          ymax=44.3)
+dims <- c(xmin=-100, xmax=-30,  # Longitude minima e maxima
+          ymin=-60, ymax=12 # Latitude minima e maxima
+          )
 
-Spain <- st_crop(x=country110_sf, 
+ame_sul <- st_crop(x=country110_sf, 
                  y=dims)
 
-Spain %>% ggplot() + 
+ame_sul %>% ggplot() + 
   geom_sf()
 ```
 
-Notice any problems?
+Percebe problemas com este mapa?
 
-1. Islands are missing (Raquel does not like this!)
-2. Coastline is very smooth.   
-3. Generally unrealistic.   
+1. Faltam ilhas 
+2. O litoral é muito suave.   
+3. Geralmente irrealista.  
+
+Vamos usar um mapa mais detalhado... 
 
 ```{r, eval = T}
+
 country10_sf <- ne_download(scale=10, 
                             type="countries",
                             category="cultural", 
                             returnclass="sf")
 
-Spain <- st_crop(x=country10_sf, y=dims)
+ame_sul_det <- st_crop(x=country10_sf, y=dims)
 
-Spain %>% ggplot() + 
+ame_sul_det %>% ggplot() + 
    geom_sf()
 ```
 
-1. Where is GRAN Canaria!?
-2. You still have other countries/land in the map
 
-Naturally, you can also just filter out the country you want because the `sf` package works very nicely with `dplyr`
+Naturalmente, você também pode filtrar o país desejado porque o pacote `sf` funciona muito bem com `dplyr`
 
 ```{r, eval = T}
 
 # head(country10_sf)
-Spain <- country10_sf %>% 
-  filter(NAME == "Spain")
+brasil <- country10_sf %>% 
+  filter(NAME == "Brazil")
 
-ggplot(Spain) + 
+ggplot(brasil) + 
   geom_sf()
 
 ```
 
-Still, is to coerce I need to know the regions within Spain...
+### País
 
-Ways to fix this: 
-1. Use the higher resolution world map when working at this scale
-2. Use a finer resolution regional map. 
+A se eu quero um area ainda mais pequena?
 
-### Regional
+Maneiras de corrigir isso: 
+1. Use o mapa mundial de maior resolução ao trabalhar nesta escala
+2. Use um mapa regional de resolução mais precisa.
 
 ```{r sub_national, eval = T}
 
@@ -178,47 +168,63 @@ Ways to fix this:
 states <- ne_states()
 states_sf <- st_as_sf(states)
 
-states_sf_es <- states_sf %>% 
-  filter(iso_a2=="ES") #Filter out to one country as otherwise it takes forever.
+states_sf_br <- states_sf %>% 
+  filter(iso_a2=="BR") #Filtre para um país, caso contrário, levará uma eternidade.
 
-ggplot(states_sf_es) + 
+ggplot(states_sf_br) + 
   geom_sf()
 
 ```
 
-But really, what I really care about is Galicia...
+Então, se o que importa para mim é só RGN... Primeiro vamos descobrir os nomes (nem sempre é fácil)
 
-```{r galicia, eval = T}
 
-states_sf_es %>% 
-  filter(region == "Galicia") %>% 
+```{r}
+unique(states_sf_br$name)
+
+```
+
+
+Agora sim, sabemos que RGN ta como *Rio Grande do Norte*... 
+
+```{r rgn, eval = T}
+
+states_sf_br %>% 
+  filter(name == "Rio Grande do Norte") %>% 
   ggplot() +
   geom_sf()
 
 ```
 
-You can also load your own shapefile
+You can also load your own shapefile (DO NOT RUN)
 
 ```{r load-map}
 
-Path_sf <- here("Sessions/Spatial Analysis/Data/FAO_AREAS")
+path_sf <- here("data/espacial/fao_areas")
 
 # The File
-Name_sf <- "FAO_AREAS.shp"
+name_sf <- "FAO_AREAS_CWP.shp"
 
 # Load it!
-FAO_Areas_sf <- st_read(dsn = Path_sf,
-                        layer =file_path_sans_ext(Name_sf))
+fao_areas_sf <- st_read(dsn = path_sf,
+                        layer =file_path_sans_ext(name_sf))
 
 # Explor it
-names(FAO_Areas_sf)
+names(fao_areas_sf)
 # head(FAO_Areas_sf)
 
 # And plot it (will take a little bit)
-ggplot(FAO_Areas_sf) +
+ggplot(fao_areas_sf) +
   geom_sf()
 
 ```
+
+
+## Time is essence... 
+
+While you can do all the maps that you want with R, it is not the best tool for visualization. It can actually take for-ever to show you a map (as we are swing now)
+
+
 
 ## Use of maps in science
 
