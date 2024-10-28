@@ -6,7 +6,11 @@
 
 -   [Brunno Oliveira](oliveirabrunno.wordpress.com) - Centro de Sínteses e Análises em Biodiversidade, França.
 
+brunno.eco[at]gmail.com
+
 -   [Juliano Palacios](www.julianopalacios.com) - Institute for the Oceans and Fisheries da Universidade da Colúmbia Britânica.
+
+j.palacios[at]oceans.ubc.ca
 
 # Resumo
 
