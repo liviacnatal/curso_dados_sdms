@@ -72,8 +72,11 @@ O curso completo será impartido no R e GitHub. É preferível que o aluno tenha
 
 -   Java Para instalar o pacote rJava no R para rodar o MaxEnt será necessário instalar o Java. [Siga esses passos](https://www.java.com/pt-BR/)
 
--   *Packages*,
+-   *Packages*, Dentro do projeto do curso, execute o seguinte código no terminal para instalar todos os pacotes necesarios para o curso:
+  
+  `source(paste0(here(),"/sessoes/funcoes_de_apoio/instalar_pacotes.R"))`
 
+Caso nao funcionar, navegue ate o arquivo, abra e execute o script de forma manual
 
 # Referencias 
 
