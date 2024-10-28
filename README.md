@@ -1,4 +1,4 @@
-# Curso de limpeza e análise de dados para realizar modelos de distribução de especies
+# Curso de limpeza e análise de dados para realizar modelos de distribuição de espécies
 
 -   Data, 4 a 8 de novembro de 2024
 
