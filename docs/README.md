@@ -1,9 +1,4 @@
----
-title: "Curso de limpeza e análise de dados para modelos de distribuição de espécies"
-author: "Brunno Oliveira & Juliano Palacios"
-date: "4 a 8 de novembro de 2024"
-output: ioslides_presentation
----
+
 
 # Ministrantes
 
