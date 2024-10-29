@@ -37,3 +37,6 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# UNessesary HTMLs
+/sessoes/github/git_github.nb.html
