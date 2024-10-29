@@ -1,0 +1,392 @@
+---
+title: "Análise espacial usando R"
+author: "Juliano Palacios Abrantes"
+date: "Última atualização `r Sys.Date()`"
+output: 
+  html_notebook: 
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+    theme: darkly
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+library(here)
+
+source(paste0(here(),"/sessoes/funcoes_de_apoio/instalar_pacotes.R"))
+
+packages <- c("tidyverse", 
+              "sf", # for loading shapefiles
+              "sp",
+              "tools", # for loading shapefiles
+              "here", # for easy paths
+              "rnaturalearth",
+              "viridis" # color-blind friendly pallets
+              )
+
+ipak(packages)
+
+# Needs to convert to D2
+# Fix new updates of sf package
+sf::sf_use_s2(use_s2 = FALSE)
+
+```
+
+## Map sources
+
+Existem inúmeras fontes de dados de mapas gratuitas e vários pacotes R que os integram bem. Uma das principais fontes que utilizo é o [shapefile do litoral com resolução de 10 m da Natural Earth] (<http://www.naturalearthdata.com/downloads/10m-physical-vectors/>). Você pode visitar o site para encontrar diferentes versões ou tipos de arquivos, e eles vêm principalmente em três formatos de resolução: 10m (fino), 50m (médio), 110m (grosso). A resolução se traduz diretamente em velocidade de mapeamento e processamento, com resoluções mais precisas demorando muito mais tempo. Como estou trabalhando em vários exemplos, usarei os mapas de resolução mais grosseira/mais baixa para a maioria deles.
+
+### Global
+
+Natural Earth também tem seu próprio pacote R chamado `rnaturalearth`
+
+```{r, eval = T, message=F,warning=F}
+
+land110 <- ne_download(scale = 110, 
+                       type = 'land', 
+                       category = 'physical')
+
+plot(land110)
+```
+
+Se você quiser preencher o terreno, você deve usar um shapefile de terreno. Se você quiser apenas o contorno dos continentes/ilhas, use um arquivo de litoral.
+
+```{r, eval = T,message=F,warning=F,results='hide'}
+
+coast110 <- ne_download(scale = 110, 
+                        type = 'coastline',
+                         category = 'physical')
+sp::plot(coast110)
+```
+
+Eles originalmente parecem iguais, mas se você convertê-los em um objeto de "recursos simples" (`sf`), poderá ver a diferença.
+
+```{r, eval = T}
+
+land110_sf <- st_as_sf(land110)
+
+# Land shapefile
+ggplot(land110_sf) + 
+  geom_sf(fill="blue")
+
+coast110_sf <- st_as_sf(coast110)
+
+# Coastal lines shapefile
+ggplot(coast110_sf) + 
+  geom_sf(color="blue")
+```
+
+Alternativamente, você pode querer dados em nível de país, como ao fazer um mapa mundial.
+
+```{r, eval = T}
+
+country110 <- ne_countries() #natural earth countries
+
+country110_sf <- st_as_sf(country110)
+
+ggplot(country110_sf) + 
+  geom_sf(aes(fill = as.factor(mapcolor9))) +
+  theme(legend.position="none") + # Legend wont show up (try change it to 'right')
+  scale_fill_brewer(palette="Greys")
+
+# Maybe you want a map all grey
+ggplot(country110_sf) + 
+  geom_sf(fill="grey50") +
+  theme(legend.position="none")
+
+
+
+```
+
+### Regional
+
+Mas é difícil ver o que está acontecendo em um nível menor com esses dados de nível mundial. Você tem duas opções:
+
+1.  Amplie um subconjunto do mapa atual.\
+2.  Encontre um mapa em menor escala que seja da sua área de interesse.
+
+Outra boa fonte de dados a nível de país, incluindo subunidades, é <http://www.diva-gis.org/gdata>
+
+```{r crop, eval = T, message = FALSE, warning = FALSE}
+
+dims <- c(xmin=-100, xmax=-30,  # Longitude minima e maxima
+          ymin=-60, ymax=12 # Latitude minima e maxima
+          )
+
+ame_sul <- st_crop(x=country110_sf, 
+                 y=dims)
+
+ame_sul %>% ggplot() + 
+  geom_sf()
+```
+
+Percebe problemas com este mapa?
+
+1.  Faltam ilhas
+2.  O litoral é muito suave.\
+3.  Geralmente irrealista.
+
+Vamos usar um mapa mais detalhado...
+
+```{r, eval = T, message = FALSE, warning = FALSE, results='hide'}
+
+country10_sf <- ne_download(scale=10, 
+                            type="countries",
+                            category="cultural", 
+                            returnclass="sf"
+                            )
+
+ame_sul_det <- st_crop(x=country10_sf, y=dims)
+
+ame_sul_det %>% ggplot() + 
+   geom_sf()
+```
+
+Naturalmente, você também pode filtrar o país desejado porque o pacote `sf` funciona muito bem com `dplyr`
+
+```{r, eval = T}
+
+# head(country10_sf)
+brasil <- country10_sf %>% 
+  filter(NAME == "Brazil")
+
+ggplot(brasil) + 
+  geom_sf()
+
+```
+
+### País
+
+A se eu quero um area ainda mais pequena?
+
+Maneiras de corrigir isso: 1. Use o mapa mundial de maior resolução ao trabalhar nesta escala 2. Use um mapa regional de resolução mais precisa.
+
+```{r sub_national, eval = T, message = FALSE, warning = FALSE}
+
+# ?ne_download
+states <- ne_states()
+states_sf <- st_as_sf(states)
+
+states_sf_br <- states_sf %>% 
+  filter(iso_a2=="BR") #Filtre para um país, caso contrário, levará uma eternidade.
+
+ggplot(states_sf_br) + 
+  geom_sf()
+
+```
+
+Então, se o que importa para mim é só RGN... Primeiro vamos descobrir os nomes (nem sempre é fácil)
+
+```{r}
+unique(states_sf_br$name)
+
+```
+
+Agora sim, sabemos que RGN ta como *Rio Grande do Norte*...
+
+```{r rgn, eval = T}
+
+states_sf_br %>% 
+  filter(name == "Rio Grande do Norte") %>% 
+  ggplot() +
+  geom_sf()
+
+```
+
+You can also load your own shapefile (DO NOT RUN)
+
+```{r load_peronal_map, eval = T, echo = T}
+
+path_sf <- here("data/espacial/fao_areas")
+
+# The File
+name_sf <- "FAO_AREAS_CWP.shp"
+
+# Load it!
+fao_areas_sf <- st_read(dsn = path_sf,
+                        layer =file_path_sans_ext(name_sf))
+
+# Explor it
+names(fao_areas_sf)
+# head(FAO_Areas_sf)
+
+# And plot it (will take a little bit)
+# ggplot(fao_areas_sf) +
+  # geom_sf()
+
+```
+
+## Tempo é essência...
+
+Embora você possa fazer todos os mapas que quiser com R, não é a melhor ferramenta para visualização. Na verdade, pode levar uma eternidade para mostrar um mapa (já que estamos balançando agora). Existem duas opções principais aqui:
+
+1.  Não execute viz. scripts em R, melhor, salve figuras como documentos *.png*
+2.  Obtenha o estilo geométrico de Picasso com `[st_simplify()]`(<https://postgis.net/docs/ST_Simplify.html>)
+
+### 1. Guarda o mapa no computador
+
+```{r save_my_map, eval = T, echo = T}
+
+# Crie o mapa
+mapa_fao <- ggplot(fao_areas_sf) +
+  geom_sf()
+
+# Salve no computado para visualizar
+ggsave(
+  "mapa_fao.png",
+  mapa_fao,
+  width = 14,
+  height = 7
+)
+
+```
+
+### 2. Simplifica estilo Picasso
+
+```{r message = FALSE, warning = FALSE, results = 'hide'}
+
+# Um mapa bem estilo Picasso
+very_picasso <- fao_areas_sf %>% 
+  st_simplify(dTolerance = 10000, preserveTopology = T)
+
+# Plot a very Picasso map 
+ggplot(very_picasso) +
+  geom_sf()
+
+
+# Dismunir o estilo mais ainda da pra ver
+menos_picasso <- fao_areas_sf %>% 
+  st_simplify(dTolerance = 100, preserveTopology = T)
+
+# mapa menos Picasso
+ggplot(menos_picasso) +
+  geom_sf()
+
+# Eventualmente podemos reduzir o tamanho sem modificar o traco
+sequer_picasso <- fao_areas_sf %>% 
+  st_simplify(dTolerance = 1, preserveTopology = T)
+
+# mapa menos Picasso
+ggplot(sequer_picasso) +
+  geom_sf()
+
+
+```
+
+## Uso de mapas na ciência
+
+-   Mapas de referência (figura clássica 1)
+-   Mapas raster
+-   Mapas de entidades geográficas
+-   Mapas com dados no topo (pontos, linhas, etc.)
+-   Modelos de distribuição de espécies! (*Sexta!*)
+
+### Mapas de referência
+
+Mapas de referência são frequentemente usados para orientar o público sobre uma área de estudo com a qual ele pode não estar familiarizado. Eles são mais eficazes quando o situam em algum tipo de conhecimento que já possuem. Assim, eles costumam usar um mapa de pequena escala e um mapa de grande escala.
+
+```{r reference_map, eval = T, echo = F, message = FALSE, warning = FALSE, results = 'hide'}
+
+rgn_sf <- states_sf_br %>% 
+  filter(name == "Rio Grande do Norte")
+
+  ggplot() + 
+  geom_sf(data = states_sf_br, aes(), fill = "antiquewhite") +
+  geom_sf_text(data = states_sf_br, aes(label =abbrev), color = "grey30") +
+  geom_sf(data = rgn_sf,
+    aes(),
+    fill = "blue"
+  ) +
+    labs( x = "Longitude", y = "Latitude") +
+  theme_minimal() +
+    ggtitle("Área de estudo (Rio Grande do Norte, Brasil)") +
+    # Incluir norte
+  annotation_north_arrow(
+    location = "br", # Possição: "bl" pra bottom left, "br" pra bottom right, etc.
+    style = north_arrow_fancy_orienteering
+  ) +
+    # incluir escala
+    annotation_scale(
+    location = "bl",
+    width_hint = 0.3 # Tamanho da escala como fração do tamanho da figura
+  )
+
+```
+
+### Maps tipo raster
+
+Rasters são simplificações de dados espaciais de acordo com um determinado tamanho de resolução.
+
+```{r, message = FALSE, warning = FALSE, results = 'hide'}
+
+states_sf_br %>% 
+  ggplot() +
+  geom_sf(
+    aes(fill=diss_me)
+  ) +
+  scale_fill_distiller(palette = "Spectral") +
+  theme_minimal()
+
+```
+
+### Mapas de entidades geográficas
+
+Já fizemos um desses que foi preenchido em um recurso de mapa. O ponto principal disso é ter uma coluna anexada ao dataframe que você está interessado em plotar. Então, os polígonos são preenchidos com base nisso.
+
+```{r message = FALSE, warning = FALSE, results = 'hide'}
+
+#AVISO: EXEMPLO USA DADOS FALSOS
+# head(states_sf_es)
+names(states_sf_br)
+
+# Criar conjunto de dados fictício
+df <- tibble(adm1_code= states_sf_br$adm1_code, 
+             amantes_do_mar = rnorm(nrow(states_sf_br), mean=20000, sd=1000))
+
+# Junte nossos dados com o shapefile
+states_sf_br <- left_join(states_sf_br, 
+                          df)
+# Criar mapa
+states_sf_br %>% 
+  ggplot() + 
+  geom_sf(aes(fill=amantes_do_mar)) + 
+  scale_fill_distiller("Amantes do mar",
+                       palette = "Spectral",
+                       breaks= seq(min(states_sf_br$amantes_do_mar),max(states_sf_br$amantes_do_mar), 1000)
+  ) +
+  theme_minimal()
+
+
+```
+
+### Mapas com dados no topo
+
+Na verdade, eles são bastante simples de fazer em R. Faça seu mapa, adicione seus dados!
+
+```{r message = FALSE, warning = FALSE, results = 'hide'}
+
+# Extraia o estado do RGN do mapa
+map <- states_sf_br %>% 
+  filter(name == "Rio Grande do Norte") %>% 
+  ggplot() +
+  geom_sf()
+
+# Datos ficticeos
+df <- tibble(
+  lat = c(-1.99,-2.3,-2.5,-3.73,-3.4,-3.3),
+  long = c(-32.9,-34.9,-36.9,-32,-36.4,-35),
+  value = c("tubarao", "tubarao", "tubarao","turista","turista","turista"))
+
+# Mapa
+map + 
+  geom_point(data=df, 
+             aes(x=long, 
+                 y=lat, 
+                 color=value), 
+             size=2) +
+  theme_bw()
+
+```
