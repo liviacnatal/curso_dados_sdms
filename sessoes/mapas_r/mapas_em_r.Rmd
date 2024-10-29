@@ -35,7 +35,7 @@ sf::sf_use_s2(use_s2 = FALSE)
 
 ```
 
-## Map sources
+## Fontes de dados de mapas
 
 Existem inúmeras fontes de dados de mapas gratuitas e vários pacotes R que os integram bem. Uma das principais fontes que utilizo é o [shapefile do litoral com resolução de 10 m da Natural Earth] (<http://www.naturalearthdata.com/downloads/10m-physical-vectors/>). Você pode visitar o site para encontrar diferentes versões ou tipos de arquivos, e eles vêm principalmente em três formatos de resolução: 10m (fino), 50m (médio), 110m (grosso). A resolução se traduz diretamente em velocidade de mapeamento e processamento, com resoluções mais precisas demorando muito mais tempo. Como estou trabalhando em vários exemplos, usarei os mapas de resolução mais grosseira/mais baixa para a maioria deles.
 
