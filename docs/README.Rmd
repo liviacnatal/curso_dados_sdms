@@ -90,3 +90,5 @@ output:
 # Referências
 
 *Adicione referências aqui conforme necessário*
+
+PLOP do RMD
