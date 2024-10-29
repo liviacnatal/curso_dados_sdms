@@ -2,19 +2,20 @@
 title: "Introdução ao Git e GitHub"
 author: "Juliano Palacios Abrantes"
 date: "Last updated 15/06/2021"
-output: 
-  html_notebook: 
+output:
+  html_document:
     toc: yes
-    toc_depth: 3
-    toc_float:
-      collapsed: false
+    toc_depth: '3'
+    df_print: paged
     theme: darkly
+    toc_float: true
+    collapsed: true
 ---
 
 # Crie um novo repositório
 
 Existem duas (pelo menos!) maneiras de criar um novo repositório. Você pode escolher aquele com o qual se sente mais confortável! No geral, você terá concluído o seguinte:
-
+    
 - *Nome*: você quer que seja curto e direto
 - *Descrição*: é bom ter uma breve descrição do que é o repositório
 - *Caminho Local*: É aqui que você salvará o repositório em seu computador
@@ -22,6 +23,7 @@ Existem duas (pelo menos!) maneiras de criar um novo repositório. Você pode es
 - *Git Ignore*: Este é um arquivo que permitirá excluir certos arquivos do *sync*. Escolha *R* se você for um usuário R
 - *Licença*: É sempre bom ter pelo menos uma licença, mesmo que seja um trabalho de acesso aberto
 - *Público ou privado*: Se você paga ou é estudante, pode ter repositórios privados.
+
 
 **TAREFA:** Vamos criar um repositório!
 
