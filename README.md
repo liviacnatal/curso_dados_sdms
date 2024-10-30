@@ -80,3 +80,4 @@ Caso nao funcionar, navegue ate o arquivo, abra e execute o script de forma manu
 
 # Referencias 
 
+- [R for Data Science (2e)](https://r4ds.hadley.nz/)
