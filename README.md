@@ -80,4 +80,11 @@ Caso nao funcionar, navegue ate o arquivo, abra e execute o script de forma manu
 
 # Referencias 
 
+- Parte do material de este curso foi baseado no curso de [Mauricio Vancine](https://mauriciovancine.github.io/workshop-r-sdm/01_slides/slides_workshop_r_sdm.html#1) e nos [slides](https://mauriciovancine.github.io/slides/slides-sdm-esalq/slides-sdm-esalq.pdfMauricio Vancine)
+![image](https://github.com/user-attachments/assets/50618ebc-bd76-45e7-9d17-81e84b294e33)
+
 - [R for Data Science (2e)](https://r4ds.hadley.nz/)
+- [Modelos Ecológicos e a Extinção da Megafauna: clima e homem na América do Sul](https://files.cercomp.ufg.br/weby/up/672/o/Paleoecologia_completo.pdf)
+- [Species Distribution Modelling of Bigfoot Encounters Across North America](https://www.cfholbert.com/blog/bigfoot-sdm/)
+- [Understanding F1 Score, Accuracy, ROC-AUC, and PR-AUC Metrics for Models](https://www.deepchecks.com/f1-score-accuracy-roc-auc-and-pr-auc-metrics-for-models/)
+- [How to explain the ROC curve and ROC AUC score?](https://www.evidentlyai.com/classification-metrics/explain-roc-curve)
