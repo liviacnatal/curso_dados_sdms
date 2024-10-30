@@ -70,7 +70,7 @@ Emails: brunno.eco[at]gmail.com, j.palacios[at]oceans.ubc.ca
 
 - Familiaridade com **R** e **GitHub** preferível
 - Revisão de pacotes (e.g., tidyverse, ggplot2)
-- Curso disponível no GitHub
+- Curso disponível no [GitHub](https://github.com/jepa/curso_dados_sdms)
 
 ---
 
@@ -78,14 +78,9 @@ Emails: brunno.eco[at]gmail.com, j.palacios[at]oceans.ubc.ca
 
 - Instalar [R versão 4.4.1](https://www.r-project.org/)
 - Instalar [RStudio](https://www.rstudio.com/)
+- Instalar [git](https://git-scm.com/)
+- Criar conta em [GitHub](https://github.com/) (Idealmente)
 - Tutorial de [GitHub](https://docs.github.com/pt/get-started/start-your-journey/hello-world)
 - Instalar **Java** para o pacote **rJava** (usado no MaxEnt)
     - Instruções: [Java.com](https://www.java.com/pt-BR/)
 
----
-
-# Referências
-
-*Adicione referências aqui conforme necessário*
-
-PLOP
