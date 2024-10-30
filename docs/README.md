@@ -1,4 +1,13 @@
-
+---
+title: "Curso de limpeza e análise de dados para modelos de distribuição de espécies"
+author: "Brunno Oliveira & Juliano Palacios"
+date: "4 a 8 de novembro de 2024"
+output: 
+  xaringan::moon_reader:
+    css: ["default", "my-theme.css"]
+    nature:
+      beforeInit: "xaringanExtra::use_tile_view"
+---
 
 # Ministrantes
 
