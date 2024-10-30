@@ -24,9 +24,6 @@ Existem duas (pelo menos!) maneiras de criar um novo repositório. Você pode es
 - *Licença*: É sempre bom ter pelo menos uma licença, mesmo que seja um trabalho de acesso aberto
 - *Público ou privado*: Se você paga ou é estudante, pode ter repositórios privados.
 
-
-**TAREFA:** Vamos criar um repositório!
-
 ## **Página do GitHub**
 
 A partir desta etapa, você criará o repositório na página da web do GitHub. Vá para o GitHub e selecione o sinal + no canto superior direito, um submenu aparecerá, basta escolher “Novo repositório”. Depois disso basta preencher as informações e seu repositório estará criado.
@@ -71,9 +68,7 @@ Tecnicamente falando, o GitHub foi projetado para trabalho colaborativo. No enta
 
 ###  Commit, push, pull, repeat.
 
-Esta é a base do controle de versão. Essas etapas são responsáveis por salvar seu fluxo de trabalho, carregá-lo no repositório do projeto e baixá-lo para o seu computador, ou seja, sincronizar. Então, agora que criamos nosso primeiro repositório podemos começar a trabalhar nele!
-
-**TAREFA:** Vamos criar um arquivo e enviá-lo!
+Esta é a base do controle de versão. Essas etapas são responsáveis por salvar seu fluxo de trabalho, carregá-lo no repositório do projeto e baixá-lo para o seu computador, ou seja, sincronizar. 
 
 Abra um script *R* e escreva o que quiser nele.  Depois de fazermos algumas alterações no arquivo e salvá-las, você as verá refletidas em seu ambiente `Git`. Assim que terminarmos esta pequena tarefa, devemos `Commit` nossas alterações em nosso *computador local*. Lembre-se de escrever uma mensagem curta, mas informativa!
 
@@ -85,9 +80,7 @@ Depois de fazermos os Commits que desejamos para o dia, podemos enviá-los para 
 
 Agora que conhecemos a base, podemos entrar no modo colaborativo. Para colaboração, as etapas são basicamente as mesmas, com algumas etapas extras.
 
-**TAREFA:** Vamos todos colaborar no projeto `StudyGroup`.
-
-### Bifurcação!
+### Bifurcação (*Branch*)
 
 Primeiro, quando estamos colaborando, precisamos `fork` o repositório para o nosso gitHub. Vá para a página web do nosso StudyGroup (https://github.com/jepa/StudyGroup) e clique em `Fork` no canto superior direito. Isso basicamente criará nossa própria versão do projeto. Note que meu caminho inicial diz `jepa/StudyGroup`, isso significa que o repositório pertence ao usuário "jepa", o que diz o seu? 
 
@@ -107,15 +100,13 @@ Agora que temos certeza de que é isso que queremos, clicamos em "*Create a Pull
 
 ### Mesclando 
 
-Agora, como sou o único *proprietário* do repositório, sou o único com o poder de *aceitar* seu `Pull Request`. Observe que o repositório agora mostra "1" `Pull request` e quando eu o abro, chego a uma página semelhante à sua. A principal diferença é que posso `Mesclar pull request`.   
+Agora, como sou o único *proprietário* do repositório, sou o único com o poder de *aceitar* seu `Pull Request`. Observe que o repositório agora mostra "1" `Pull request` e quando eu o abro, chego a uma página semelhante à sua. A principal diferença é que posso `*Merge pull request*`.   
 
 ## Ferramentas e práticas recomendadas do gitHub
 
 ### O arquivo README.
 
 Os arquivos `README.md` são uma das ferramentas mais úteis do GitHub. Esses arquivos são mostrados diretamente no repositório e podem servir de orientação para o seu repositório. Vamos reservar um momento para escrever nosso `README.md`. Aqui estão alguns exemplos; [FishForVisa](https://github.com/jepa/FishForVisa), [OHI-Science](https://github.com/OHI -Ciência/treinamento em ciência de dados).
-
-**TAREFA:** Reserve algum tempo para preencher nosso arquivo `README.md`. Lembre-se, toda vez que você fizer uma alteração no repositório, você precisará "confirmar" essa alteração
 
 ### Problemas
 
@@ -124,18 +115,6 @@ Quantos de vocês comentaram em seu código coisas como `# Altere este valor qua
 #### Configurando uma planilha de problemas
 
 Eu gosto de ter uma forma padronizada de apresentar as questões. Para isso, vá até a aba *Insights*, selecione *Comunidade* no menu esquerdo e clique em `Adicionar` *Add Issues templates*. Depende de qual é o repositório, você pode escolher entre algumas opções. Para meus projetos pessoais eu apenas uso uma modificação do `Modelo de bug`. 
-
-**TAREFA:** Criar um modelo de problema para seu repositório
-
-#### Crie um novo problema
-
-Vá até a aba *Problemas* e clique no botão verde "Novo problema". Algumas coisas na questão:
-
-- **Destinatários**: Ao colaborar, você pode atribuir colaboradores específicos para problemas específicos. 
-- **Rótulos**: uma ótima maneira de acompanhar problemas semelhantes (por exemplo, codificação, dados, função)
-
-**TAREFA:** Criar um problema com um rótulo. Responda a esse problema e feche-o.
-
 
 ### Branches
 
@@ -183,16 +162,11 @@ Para que o branch seja mesclado, alguém deve clicar em `Merge pull request`, es
 
 ![Resumo mostrando solicitação pull new_branch](./figures/pull_request_hist.png)
 
-**TAREFA:** Criar uma nova ramificação, fazer algumas alterações em um documento existente e mesclar essa ramificação com a principal.
-
-
 ### Página do projeto
 
 O GitHub tem uma opção interessante que permite que você tenha uma página da web baseada em `rmarkdown` para o seu projeto. A melhor parte é que com alguns cliques você obtém um belo modelo!
 
-**TAREFA:** Criar uma página web para nosso projeto
-
-Vá para a página principal do repositório que você criou (não `StudyGroup`). Vá em *Configurações* e clique em *Páginas* no menu esquerdo (o último). Em `Fonte` selecione "principal". Serão apresentadas duas opções:
+Para criar uma gagina, vá para a página principal do repositório que você criou (não `StudyGroup`). Vá em *Configurações* e clique em *Páginas* no menu esquerdo (o último). Em `Fonte` selecione "principal". Serão apresentadas duas opções:
 
 - `root`, esta opção é a mais básica e usará o arquivo `README` como base da página web.
 

@@ -1,0 +1,73 @@
+---
+title: "Exercício para GitHub"
+author: "Juliano Palacios-Abrantes"
+date: "Última atualização `r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: true
+---
+
+# Introdução
+
+Nesta tarefa, você terá a oportunidade de aprimorar suas habilidades de codificação e colaboração concluindo diversas tarefas usando *Git* e *GitHub.* Este exercício não apenas irá familiarizá-lo com os conceitos de controle de versão, mas também fornecerá experiência prática com recursos essenciais do GitHub.
+
+No geral, os repositórios GitHub servem como um hub central para desenvolvimento e colaboração de código, facilitando o gerenciamento eficaz de seus projetos para indivíduos e equipes. 
+
+Esperamos que você faça as tarefas mínimas e incluímos algumas tarefas “bônus” para quem se sente mais aventureiro. Se quiser ir mais longe, faça-o e mostre-nos! Você pode compartilhar seus mapas no [canal de discussão do curso](https://github.com/jepa/curso_dados_sdms/discussions).
+
+Se você tiver algum problema ou dúvida pode entrar em contato conosco criando um [Issue](https://github.com/jepa/curso_dados_sdms/issues) se for muito específico ou iniciando uma [discussão](https://github.com/jepa/curso_dados_sdms/discussions), talvez alguns de seus colegas saibam a resposta!
+
+# Objetivos gerais:
+
+- Entenda o controle de versão: aprenda como rastrear alterações em seu código e colaborar de forma eficaz com outras pessoas.
+
+- Utilize os recursos do GitHub: ganhe experiência com *branches*, *pull requests* e *issues*.
+
+- Aprimore as habilidades de colaboração: trabalhe em conjunto com seus colegas, revise o código uns dos outros e forneça feedback construtivo.
+
+# 1. Crie um repositório
+
+- *Objetivo:*  Nesta primeira tarefa vamos criar um novo repositório GitHub e configurar o ambiente local. Vamos navegar as diferentes capacidades do *GitHub* e completar o repositório de maneira clara.
+
+- *Instruções*:
+  - Criar um repositório novo
+  - Conecta o repositório com seu R
+  - Faça seu primeiro *comit*, *push* e *pull*
+  - Complete o repositório de maneira que este pronto para colaborar com outros
+    - *Bonus*: Preencha o README.md 
+    - *Bonus*: Crie uma página web do seu projeto
+    - *Bonus*: Criar um *issue template* para indicar problemas no seu repositório
+
+# 2. Colabore no repositório do curso
+
+- *Objetivo:* Agora que conhecemos a base, podemos entrar no modo colaborativo. Para colaboração, as etapas são basicamente as mesmas, com algumas etapas extras. 
+
+- *Instruções*:
+
+  - *Fork*, o repositorio do curso no seu computador (lembra que você pode usar GitHub desktop ou R-Studio)
+  - *Branches*, crie uma nova *branch* com seu nome 
+  - Coloque sue nome no README como aprticipante do curso 
+  - Faça seu primeiro *Pull Request* com sua *branch*
+  - Revisão e feedback: Revise os *pull request* de seus colegas e forneça feedback.
+  - Crie um problema e atribua-o a um colega. Se você recebeu um problema, responda (se for verdade, corrija!)
+  
+# 3. Colabora no seu grupo
+
+
+- *Objetivo:* Agora que conhecemos a base, e como colaborar, podemos entrar no modo colaborativo com nossos colegas. Nos grupos que fizemos na aula... 
+
+- *Instruções*:
+
+  - Crie um novo repositorio (ou aidcione seus colegas a um repositorio existente) e dê acesso de colaboração a todos (*Settings*)
+  - Outros participantes façam *Fork* do repositorio
+  - Cada um inclua seu nome no arquivo README diretamente no GitHub e faça commit. Notaram a diferença entre *commit* e *pull request*? Discuta o que é melhor para a próxima etapa:
+  - Cada um do grupo deverá assumir uma destas tarefas. Assim que as tarefas forem concluídas, elas deverão ser incorporadas ao repositório principal.
+    - 1. Crie um arquivo README completo e bonito de um projeto fictício
+    - 2. Crie um site usando a versão `/doc` no repositório e crie um site com imagens, cores e outras aparências legais
+    - 3. Inclua um script de R que faça alguma função mínima
+  - Atualize o repositório de GitHub fazendo *Pull Request*
+  - Revisão e feedback: Revise os *pull request* de seus colegas, forneça feedback e aceite os corretos.
+  - Navegue possíveis conflitos entre colaborações
+  - Crie um problema e atribua-o a um colega. Se você recebeu um problema, responda (se for verdade, corrija!)
