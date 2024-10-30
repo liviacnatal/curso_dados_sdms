@@ -86,3 +86,5 @@ Caso nao funcionar, navegue ate o arquivo, abra e execute o script de forma manu
 - [Species Distribution Modelling of Bigfoot Encounters Across North America](https://www.cfholbert.com/blog/bigfoot-sdm/)
 - [Understanding F1 Score, Accuracy, ROC-AUC, and PR-AUC Metrics for Models](https://www.deepchecks.com/f1-score-accuracy-roc-auc-and-pr-auc-metrics-for-models/)
 - [How to explain the ROC curve and ROC AUC score?](https://www.evidentlyai.com/classification-metrics/explain-roc-curve)
+
+# Participantes do curso
