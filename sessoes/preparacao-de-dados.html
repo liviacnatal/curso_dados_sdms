@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>ECL0042 - O NICHO ECOLÓGICO E A DISTRIBUIÇÃO GEOGRÁFICA - INTRODUÇÃO A MODELAGEM DE DISTRIBUIÇÃO DE ESPÉCIES   </title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Brunno F. Oliveira" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="custom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# ECL0042 - O NICHO ECOLÓGICO E A DISTRIBUIÇÃO GEOGRÁFICA - INTRODUÇÃO A MODELAGEM DE DISTRIBUIÇÃO DE ESPÉCIES <br><br>
+]
+.subtitle[
+## Modulo: Preparação dos dados (Ocorrências e Variáveis preditoras)
+]
+.author[
+### Brunno F. Oliveira
+]
+.institute[
+### Centre de Synthèse et d’Analyse sur la Biodiversité (CESAB) – Fondation pour la Recherche sur la Biodiversité (FRB)
+]
+
+---
+
+
+
+
+class: inverse, center, middle
+
+Estes slides foram baseados no curso "Introdução à modelagem de distribuição de espécies usando a linguagem R, Mastozóologos Organizados em uma Conferência Online (MOCÓ)", do Prof. Dr. Maurício H. Vancine da UNESP - Rio Claro Laboratório de Ecologia Espacial e Conservação (LEEC)
+
+---
+
+background-image: url(img/github_logo.png)
+background-size: 500px
+background-position: 50% 70%
+
+# Material
+
+## O material da disciplina pode ser acessado nesse repositório
+
+.footnote[
+[Repositório no GitHub](https://github.com/jepa/curso_dados_sdms)
+]
+
+---
+
+background-image: url(img/sdm_dados.png)
+background-size: 500px
+background-position: 80% 80%
+
+# Preparação dos dados (ocorrências e variáveis)
+
+1. Dados geoespaciais
+2. Dados de ocorrências
+3. Bases de dados de ocorrências
+4. Download de dados de ocorrência
+5. Limpeza de dados de ocorrência
+6. Dados ambientais
+7. Base de dados ambientais
+8. Download de dados ambientais
+9. Colinearidade de dados ambientais
+
+---
+
+class: inverse, center, middle
+
+# Preparação dos dados (ocorrências e variáveis)
+
+---
+
+background-image: url(img/general_sig.jpg), url(img/geo_data.jpg)
+background-size: 300px, 480px
+background-position: 32% 70%, 80% 70%
+
+# 1 Dados geoespaciais
+
+## Vetor e raster
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Campbell &amp; Shin (2012)](https://2012books.lardbucket.org/books/geographic-information-system-basics/index.html),
+&lt;br&gt;
+[ESRI (2019)](https://learn.arcgis.com/en/arcgis-book/)
+
+
+---
+
+background-image: url(img/geo_vetor_dados.png), url(img/geo_vetor.png)
+background-size: 650px, 400px
+background-position: 8% 68%, 90% 70%
+
+# 1 Dados geoespaciais
+
+## Vetores 
+
+## Pontos, linhas e polígonos + Tabela de atributos
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Silva et al. (in prep.)](https://paternogbc.github.io/livro_aer/), 
+[Tennekes &amp; Nowosad (in prep.)](https://r-tmap.github.io/tmap-book/index.html)
+
+---
+
+background-image: url(img/geo_shp_logo.png), url(img/geo_shp_formats.png)
+background-size: 150px, 650px
+background-position: 95% 10%, 50% 80%
+
+# 1 Dados geoespaciais
+
+## Formato de arquivos vetoriais
+
+### Shapefile
+
+#### **.shp**: contém as informações da feição (desenho)
+#### **.dbf**: tabela que contém as informações (colunas) sobre cada feição (linhas)
+#### **.shx**: arquivo de índice que une o .shp ao .dbf
+#### **.prj**: contém as informações do sistema de referências de coordenadas
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[ESRI (1998)](https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf),
+[GIS Resources (2014)](https://gisresources.com/understanding-shapefile-shp-file-format/)
+
+---
+
+background-image: url(img/geo_raster.png), url(img/geo_raster_cont_cat.png)
+background-size: 400px, 600px
+background-position: 10% 65%, 85% 65%
+
+# 1 Dados geoespaciais
+
+## Gride ou raster
+
+### Matriz de valores - contínuos ou categóricos
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[National Ecological Observatory Network (NEON)](https://www.neonscience.org/resources/learning-hub/tutorials/dc-raster-data-r),
+[Lovelace et al. (2020)](https://geocompr.robinlovelace.net/)
+
+---
+
+background-image: url(img/geo_raster.png), url(img/geo_raster_extent.png), url(img/geo_raster_resolution.png), url(img/geo_raster_resolution_diff.png)
+background-size: 400px, 250px, 350px, 600px
+background-position: 10% 65%, 55% 35%, 95% 39%, 85% 90%
+
+# 1 Dados geoespaciais
+
+## Gride ou raster
+
+### Propriedades - Extensão e resolução
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[National Ecological Observatory Network (NEON)](https://www.neonscience.org/resources/learning-hub/tutorials/dc-raster-data-r)
+
+---
+
+background-image: url(img/geo_geotiff_logo.png)
+background-size: 600px
+background-position: 50% 55%
+
+# 1 Dados geoespaciais
+
+## Gride ou raster - Formato - GeoTiff
+
+### **.tif**: arquivo matricial georreferenciamento com informações de georreferenciamento
+
+.footnote[
+[LuminFire Developers](https://luminfire.com/technologies/geotiff/),
+[GeoTIFF](https://trac.osgeo.org/geotiff)
+]
+
+---
+
+background-image: url(img/geo_geographic.png)
+background-size: 600px
+background-position: 85% 60%
+
+# 1 Dados geoespaciais
+
+## Sistema de coordenadas 
+
+### Geográfico (graus)
+
+**1. Graus, minutos e segundos**
+- Longitude: 42°42'42" O
+- Latitude: 23°23'23" S
+
+**2. Graus decimais**
+- Longitude: -42.71167
+- Latitude: -23.38972
+
+**Conversão**: 42 + (42/60) + (42/3600) = 42.71167 &lt;br&gt;
+**Conversão**: 23 + (23/60) + (23/3600) = 23.38972
+
+&lt;br&gt;
+
+[Guia do Usuário QGIS 3.16](https://docs.qgis.org/3.16/pt_BR/docs/gentle_gis_introduction/coordinate_reference_systems.html)
+
+---
+
+background-image: url(img/geo_projection_families01.png), url(img/geo_orange_world.png), url(img/geo_proj.png)
+background-size: 450px, 200px, 500px
+background-position: 15% 65%, 78% 30%, 90% 85%
+
+# 1 Dados geoespaciais
+
+## Sistema de coordenadas 
+
+### Projetado (metros)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Guia do Usuário QGIS 3.16](https://docs.qgis.org/3.16/pt_BR/docs/gentle_gis_introduction/coordinate_reference_systems.html),
+[Tennekes &amp; Nowosad (in prep.)](https://r-tmap.github.io/tmap-book/index.html)
+
+---
+
+background-image: url(img/geo_utm_coords.png), url(img/geo_utm_zones.png)
+background-size: 300px, 600px
+background-position: 25% 75%, 90% 45%
+
+# 1 Dados geoespaciais
+
+## Sistema de coordenadas 
+
+### Projetado (metros) - Universal Transversa de Mercator (UTM)
+
+**1. Zona e metros**
+- X UTM: 706832 m E
+- Y UTM: 4344683 m N
+- Zona: 10S
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Guia do Usuário QGIS 3.16](https://docs.qgis.org/3.16/pt_BR/docs/gentle_gis_introduction/coordinate_reference_systems.html)
+
+---
+
+background-image: url(img/geo_datum01.jpeg)
+background-size: 700px
+background-position: 70% 60%
+
+# 1 Dados geoespaciais
+
+## Datum
+
+### Relação do sistema de coordenadas com a superfície da Terra
+
+### **1. Geocêntricos**
+- WGS 84
+- SIRGAS 2000
+
+### **2. Topocêntricos**
+- SAD 69
+- Córrego Alegre
+
+&lt;br&gt;
+
+### **Conversão**: não é trivial e requer muita trigonometria
+
+---
+
+background-image: url(img/geo_datum_sad_sirgas.jpg)
+background-size: 500px
+background-position: 75% 80%
+
+# 1 Dados geoespaciais
+
+## Datum
+
+### Relação do sistema de coordenadas com a superfície da Terra
+
+### **1. Geocêntricos**
+- SIRGAS 2000
+
+### **2. Topocêntricos**
+- SAD 69
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+### **Diferença**: cerca de 65 metros
+
+---
+
+class: inverse, center, middle
+
+# Recapitulando: o Sistema de Referência de Coordenadas (CRS) é composto por:
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+# 1. Sistema de coordenadas (geográfico ou projetado)
+&lt;br&gt;&lt;br&gt;
+# 2. Datum (relação do sistema de coordenadas com a superfície da Terra)
+
+---
+
+background-image: url(img/crs.png)
+background-size: 800px
+background-position: 40% 75%
+
+# 1 Dados geoespaciais
+
+### Sistema de Referência de Coordenadas (*Coordinate Reference System*)
+
+### Datum + Sistema de Coordenadas (geográfico ou projetado)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Overview of Coordinate Reference Systems (CRS) in R](https://www.nceas.ucsb.edu/sites/default/files/2020-04/OverviewCoordinateReferenceSystems.pdf)
+
+---
+
+background-image: url(img/geo_epsg.png)
+background-size: 1000px
+background-position: 50% 80%
+
+# 1 Dados geoespaciais
+
+## EPSG (*European Petroleum Survey Group*)
+
+### Possui códigos numéricos para quase todos os CRSs
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+[EPSG](https://epsg.io/)
+
+---
+
+background-image: url(img/geo_epsg.png)
+background-size: 500px
+background-position: 90% 85%
+
+# 1 Dados geoespaciais
+
+## EPSG (*European Petroleum Survey Group*)
+
+&lt;br&gt;
+
+### EPSG: 4326 [WGS84 Geográfico](https://epsg.io/4326)
+
+### EPSG: 4674 [SIRGAS2000 Geográfico](https://epsg.io/4674)
+
+### EPSG: 32723 [WGS84 UTM23S](https://epsg.io/32723)
+
+### EPSG: 31983 [SIRGAS2000 UTM23S](https://epsg.io/31983)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+[EPSG](https://epsg.io/)
+
+---
+
+# 1 Dados geoespaciais
+
+## Principais fontes de dados vetoriais
+
+- **[IBGE](https://www.ibge.gov.br/geociencias/downloads-geociencias.html)**: limites territoriais e censitários do Brasil
+- **[FBDS](http://geo.fbds.org.br)**: uso da terra, APP e hidrografia - Mata Atlântica e Cerrado
+- **[GeoBank](http://geosgb.cprm.gov.br/)**: dados geológicos do Brasil
+- **[Pastagem.org](http://maps.lapig.iesa.ufg.br)**: dados de pastagens e gado para o Brasil
+- **[CanaSat](http://www.dsr.inpe.br/laf/canasat/)**: dados de cana-de-açúcar para o Brasil
+- **[CSR Maps](http://maps.csr.ufmg.br)**: diversos dados vetoriais para o Brasil
+- **[Ecoregions](https://ecoregions2017.appspot.com/)**: dados de biorregiões e biomas do mundo  
+- **[GADM](https://gadm.org/)**: limites de áreas administrativas do mundo
+- **[Natural Earth](https://www.naturalearthdata.com/):** diversos limites para o mundo
+- **[Protected Planet](https://www.protectedplanet.net/en):** áreas protegidas para o mundo
+- **[UN Biodiversity Lab](https://www.unbiodiversitylab.org/)**: Diversas bases de dados para o mundo                        	|
+- **[HydroSHEDS](https://www.hydrosheds.org/)**: informações hidrológicas do mundo
+- **[Global Roads Inventory Project (GRIP)](https://www.globio.info/download-grip-dataset)**: dados de estradas do mundo todo 
+
+---
+
+# 1 Dados geoespaciais
+
+## Principais fontes de dados matriciais (raster)
+
+- **[MapBiomas](https://mapbiomas.org)**: uso e cobertura da terra para o Brasil, diversos anos
+- **[Bahlu](ftp://madeira.dea.ufv.br/bdados/bhalu/)**: Distribuições históricas de terras agrícolas e pastagens para todo o Brasil de 1940 a 2012
+- **[USGS](https://www.usgs.gov)**: dados de diversos satélites livres para o mundo
+- **[SRTM](http://srtm.csi.cgiar.org/)**: dados de elevação para o mundo
+- **[Global Forest Watch](https://www.globalforestwatch.org/)**: dados de uso e cobertura para todo o planeta
+- **[Geoservice Maps](https://geoservice.dlr.de/web/maps)**: dados de elevação e florestas para o mundo
+- **[GlobCover](http://due.esrin.esa.int/page_globcover.php)**: dados de uso e cobertura da terra para todo o planeta
+- **[Global Human Footprint](https://wcshumanfootprint.org/)**: dados de pegada ecológica para o mundo
+- **[Land-Use Harmonization (LUH2)](https://luh.umd.edu/)**: dados atuais e previsões de uso da terra
+- **[SoilGrids](https://soilgrids.org/)**: dados de solo para o mundo                         
+- **[WorldClim](https://www.worldclim.org/)**: dados climáticos para o mundo
+- **[CHELSA](https://chelsa-climate.org/)**: dados climáticos para o mundo
+- **[EarthEnv](https://www.earthenv.org/)**: dados de cobertura da terra, nuvens, relevo e hidrografia
+- **[MARSPEC](http://www.marspec.org)**: dados de condições do oceano para o mundo
+- **[Bio-ORACLE](https://www.bio-oracle.org/)**: dados de condições do oceano para o mundo    
+
+---
+
+# 1 Dados geoespaciais
+
+## Principais fontes de dados em pacotes no R
+
+- **[geobr](https://cran.r-project.org/web/packages/geobr/index.html)**: carrega Shapefiles de Conjuntos de Dados Espaciais Oficiais do Brasil
+- **[rnaturalearth](https://cran.r-project.org/web/packages/rnaturalearth/index.html)**: dados do mapa mundial da Natural Earth
+- **[rworldmap](https://cran.r-project.org/web/packages/rworldmap/index.html)**: mapeando Dados Globais
+- **[spData](https://cran.r-project.org/web/packages/spData/index.html)**: conjuntos de dados para análise espacial
+- **[OpenStreetMap](https://cran.r-project.org/web/packages/OpenStreetMap/index.html)**: acesso para abrir imagens raster de mapas de ruas
+- **[osmdata](https://cran.r-project.org/web/packages/osmdata/index.html)**: baixe e importe dados do OpenStreetMap
+- **[geonames](https://cran.r-project.org/web/packages/geonames/index.html)**: interface para o serviço da Web de consulta espacial "Geonames"
+- **[rgbif](https://cran.r-project.org/web/packages/rgbif/index.html)**: interface para o Global 'Biodiversity' Information Facility API
+- **[maptools](https://cran.r-project.org/web/packages/maptools/index.html)**: ferramentas para lidar com objetos espaciais
+- **[marmap](https://cran.r-project.org/web/packages/marmap/index.html)**: importar, traçar e analisar dados batimétricos e topográficos
+- **[envirem](https://cran.r-project.org/web/packages/envirem/index.html)**: geração de Variáveis ENVIREM
+- **[sdmpredictors](https://cran.r-project.org/web/packages/sdmpredictors/index.html)**: conjuntos de dados preditor de modelagem de distribuição de espécies
+
+---
+
+class: inverse, center, middle
+
+# Dúvidas?
+
+---
+
+class: inverse, center, middle
+
+# 2 Dados de ocorrências
+
+---
+
+background-image: url(img/sdm_ocorrencias_formato.png)
+background-size: 700px
+background-position: 50% 65%
+
+# 2 Dados de ocorrências
+
+## Formato
+
+---
+
+background-image: url(img/sdm_occ_fogomuseu.webp)
+background-size: 400px
+background-position: 55% 75%
+
+# 2 Dados de ocorrências
+
+## Fontes
+
+- Coletas em campo (amostragens em campo)
+- Literatura (artigos, data papers, ...)
+- Naturalistas e ciência cidadã (e-Bird, iNaturalist, …)
+- Coleções científicas e museus (Museu Nacional, MZUSP, CFHB, ...)
+- Banco de dados (GBIF, SpeciesLink, ...)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+**Incêndio no Museu Nacional (RJ) 02/09/2018**. Foto: [Ricardo Moraes/Reuters](https://g1.globo.com/pop-arte/noticia/2018/09/03/principais-museus-do-mundo-utilizam-patrocinio-privado-para-manter-estrutura-e-expandir-acervo-veja-lista.ghtml)
+
+---
+
+background-image: url(img/sdm_occ_gbif.png), url(img/sdm_occ_vertnet.png), url(img/sdm_occ_bien.png), url(img/sdm_occ_specieslink.png)
+background-size: 500px, 500px, 500px, 500px
+background-position: 90% 15%, 90% 58%, 90% 95%, 10% 80%
+
+# 2 Dados de ocorrências
+
+## Banco de dados
+
+- [Global Biodiversity Information Facility (GBIF)](https://www.gbif.org/)
+- [iNaturalist](https://www.inaturalist.org/)
+- [VertNet](http://vertnet.org/)
+- [eBird](https://ebird.org/home)
+- [iDigBio](https://www.idigbio.org/)
+- [Ocean Biogeographic Information System (OBIS)](https://obis.org/)
+- [Botanical Information and Ecology Network (BIEN)](https://bien.nceas.ucsb.edu/bien/)
+- [speciesLink](https://specieslink.net/)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Maitner et al. (2017)](https://doi.org/10.1111/2041-210X.12861)
+
+---
+
+background-image: url(img/sdm_occ_auk.png), url(img/sdm_occ_rgbif.png), url(img/sdm_occ_spocc.png)
+background-size: 200px, 200px, 200px
+background-position: 75% 20%, 60% 70%, 90% 70%
+
+# 2 Dados de ocorrências
+
+## Pacotes no R
+
+- [spocc](https://docs.ropensci.org/spocc/)
+- [rgbif](https://docs.ropensci.org/rgbif/)
+- [rvertnet](https://docs.ropensci.org/rvertnet/)
+- [rebird](https://docs.ropensci.org/rebird/)
+- [auk](https://cornelllabofornithology.github.io/auk/)
+- [ridigbio](https://github.com/iDigBio/ridigbio)
+- [BIEN](https://bien.nceas.ucsb.edu/bien/tools/rbien/)
+- [taxize](https://docs.ropensci.org/taxize/)
+- [CoordinateCleaner](https://docs.ropensci.org/CoordinateCleaner/)
+- [sampbias](https://github.com/azizka/sampbias)
+- [spThin](https://github.com/mlammens/spThin)
+- [occCite](https://hannahlowens.github.io/occCite/)
+
+&lt;br&gt;&lt;br&gt;
+[Aiello-Lammens et al. (2015)](https://doi.org/10.1111/ecog.01132),
+[Maitner et al. (2017)](https://doi.org/10.1111/2041-210X.12861),
+[Zizka et al. (2019)](https://doi.org/10.1111/2041-210X.13152),
+[Zizka et al. (2020)](https://doi.org/10.1111/ecog.05102),
+[Owens et al. (2021)](https://doi.org/10.1111/ecog.05618)
+
+---
+
+class: inverse, center, middle
+
+# Mas o mundo não é tão simples e coletar dados em campo é complicado...
+
+---
+
+background-image: url(img/sdm_occ_vies_brasil02.jpg), url(img/sdm_occ_vies_brasil01.jpg)
+background-size: 600px, 500px
+background-position: 8% 70%, 94% 63%
+
+# 2 Dados de ocorrências
+
+## Viés de amostragem - Brasil
+
+- 1.144.629 (total) e 882.468 (válidos) ocorrências para 4345 espécies
+- Grupos: vertebrados , artropodes e angiospermas
+- Todos as ocorrências &lt; 1km de rotas de acesso (estradas e rios)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Oliveira et al. (2016)](https://doi.org/10.1111/ddi.12489)
+
+---
+
+background-image: url(img/sdm_occ_vies_mundo01.jpg), url(img/sdm_occ_vies_mundo02.jpg)
+background-size: 500px, 600px
+background-position: 7% 65%, 90% 65%
+
+# 2 Dados de ocorrências
+
+## Viés de amostragem - Mundo
+
+- 742 milhões de ocorrências de 374.900 espécies
+- Representando 6,74% do globo amostrado
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Hughes et al. (2021)](https://doi.org/10.1111/ecog.05926)
+
+---
+
+class: inverse, center, middle
+
+# Bora voltar para o R para baixar as ocorrências!
+
+---
+
+class: inverse, center, middle
+
+# 3 Dados ambientais
+
+---
+
+background-image: url(img/geo_raster.png)
+background-size: 550px
+background-position: 50% 65%
+
+# 3 Dados ambientais
+
+## Formato: gride ou raster ou matricial
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[National Ecological Observatory Network (NEON)](https://www.neonscience.org/resources/learning-hub/tutorials/dc-raster-data-r)
+
+---
+
+background-image: url(img/sdm_var_wc.png), url(img/sdm_var_chelsa.gif), url(img/sdm_var_soilgrids.png), url(img/sdm_var_biooracle.jpg)
+background-size: 500px, 450px, 480px, 300px
+background-position: 85% 15%, 83% 45%, 87% 91%, 34% 90%
+
+# 3 Dados ambientais
+
+## Bases de dados
+
+- [WorldClim](https://www.worldclim.org/)
+- [CHELSA](https://chelsa-climate.org/)
+- [MERRAclim](https://datadryad.org/stash/dataset/doi:10.5061/dryad.s2v81)
+- [ENVIREM](https://envirem.github.io/)
+- [PaleoClim](http://www.paleoclim.org/)
+- [ecoClimate](https://www.ecoclimate.org/)
+- [EarthEnv](https://www.earthenv.org/)
+- [SRTM](http://srtm.csi.cgiar.org/)
+- [Land-Use Harmonization (LUH2)](https://luh.umd.edu/)
+- [GlobCover](http://due.esrin.esa.int/page_globcover.php)
+- [Global Human Footprint](https://wcshumanfootprint.org/)
+- [SoilGrids](https://soilgrids.org/)
+- [MARSPEC](http://www.marspec.org)
+- [Bio-ORACLE](https://www.bio-oracle.org/)
+
+---
+
+class: inverse, center, middle
+
+# E tem muita diferença entre as bases de dados?
+
+---
+
+background-image: url(img/sdm_var_diff01.png), url(img/sdm_var_diff03.png), url(img/sdm_var_diff02.jpg)
+background-size: 380px, 500px, 550px
+background-position: 13% 38%, 7% 85%, 90% 60%
+
+# 3 Dados ambientais
+
+## Diferenças entre as bases de dados bioclimáticas
+
+### Correlação
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Morales-Barbero &amp; Vega-Álvarez (2018)](https://onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13124)
+
+---
+
+background-image: url(img/sdm_var_wc02.webp), url(img/sdm_var_interpolacao01.gif), url(img/sdm_var_interpolacao03.png)
+background-size: 500px, 300px, 500px
+background-position: 10% 40%, 81% 15%, 90% 85%
+
+# 3 Dados ambientais
+
+## Interpolação
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Biodiversity and Climate Change Virtual Laboratory (BCCVL)](https://support.bccvl.org.au/support/home),
+&lt;br&gt;
+[National Ecological Observatory Network (NEON)](https://www.neonscience.org/resources/learning-hub/tutorials/spatial-interpolation-basics),
+&lt;br&gt;
+[Fick &amp; Hijmans (2017)](https://onlinelibrary.wiley.com/doi/10.1002/joc.5086)
+
+---
+
+# 3 Dados ambientais
+
+## Variáveis bioclimáticas
+
+.pull-left[
+| Variável | Tipo         | Descrição                        |
+| -------- | ------------ | -------------------------------- |
+| BIO01    | Temperatura  | Temp. média anual                |
+| BIO02    | Temperatura  | Variação diurna média da temp.   |
+| BIO03    | Temperatura  | Isotermalidade                   |
+| BIO04    | Temperatura  | Sazonalidade da temp.            |
+| BIO05    | Temperatura  | Temp. máx. do mês mais quente    |
+| BIO06    | Temperatura  | Temp. mín. do mês mais frio       |
+| BIO07    | Temperatura  | Amplitude térmica anual          |
+| BIO08    | Temperatura  | Temp. média do trim. mais úmido  |
+| BIO09    | Temperatura  | Temp. média do trim. mais seco   |
+| BIO10    | Temperatura  | Temp. média do trim. mais quente |
+| BIO11    | Temperatura  | Temp. média do trim. mais frio   |
+]
+
+.pull-right[
+
+| Variável | Tipo         | Descrição                   |
+| -------- | ------------ | --------------------------- |
+| BIO12    | Precipitação | Prec. anual                 |
+| BIO13    | Precipitação | Prec. do mês mais chuvoso   |
+| BIO14    | Precipitação | Prec. do mês mais seco    |
+| BIO15    | Precipitação | Sazonalidade da prec.       |
+| BIO16    | Precipitação | Prec. do trim. mais chuvoso |
+| BIO17    | Precipitação | Prec. do trim. mais seco    |
+| BIO18    | Precipitação | Prec. do trim. mais quente  |
+| BIO19    | Precipitação | Prec. do trim. mais frio    |
+
+*Temp. = Temperatura; Prec. = Precipitação; &lt;br&gt;
+trim. = Trimestre; 
+
+[O’Donnell &amp; Ignizio (2012)](https://pubs.usgs.gov/ds/691/ds691.pdf)
+]
+
+---
+
+class: inverse, center, middle
+
+# Mas informação demais quase sempre atrapalha...
+
+---
+
+background-image: url(img/sdm_var_parcimonia.jpg), url(img/sdm_var_ockham_razor.jpg)
+background-size: 350px, 350px
+background-position: 15% 69%, 80% 70%
+
+# 3 Dados ambientais
+
+## Princípio da Parcimônia (Por que complicar esse modelo aí?)
+
+- William of Ockham's (1285–1348)
+- "É fútil fazer com mais o que pode ser feito com menos"
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Coelho et al. (2018)](https://doi.org/10.1111/ecog.04228),
+[What does Occam’s razor mean? (2019)](https://englishtalkzone.com/what-does-occams-razor-mean/)
+
+---
+
+background-image: url(img/sdm_var_correlacao01.webp), url(img/sdm_var_correlacao02.webp)
+background-size: 600px, 600px
+background-position: 75% 40%, 75% 80%
+
+# 3 Dados ambientais
+
+## Colinearidade - Correlação (Pearson ou Spearman)
+
+- Mede o grau de relação (positiva ou negativa) entre duas variáveis
+&lt;br&gt;&lt;br&gt;
+- r &gt; |0.7|: indica alta correlação
+&lt;br&gt;&lt;br&gt;
+- `\(r = \dfrac{cov(X, Y)}{\sqrt{var(X) . var(Y)}}\)`
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Zuur et al. (2010)](https://onlinelibrary.wiley.com/doi/10.1111/j.2041-210X.2009.00001.x),
+[Dormann et al. (2012)](https://doi.org/10.1111/j.1600-0587.2012.07348.x),
+[Naimi et al. (2014)](https://doi.org/10.1111/j.1600-0587.2013.00205.x),
+[Feng et al. 2019](http://www.nature.com/articles/s41559-019-0972-5),
+[Coeficientes de correlação](https://operdata.com.br/blog/coeficientes-de-correlacao/)
+
+---
+
+background-image: url(img/sdm_var_vif.jpg)
+background-size: 550px
+background-position: 80% 75%
+
+# 3 Dados ambientais
+
+## Colinearidade - Fator de Inflação de Variância (VIF)
+
+- Medida da quantidade de multicolinearidade em um conjunto de múltiplas variáveis
+&lt;br&gt;&lt;br&gt;
+- VIF = 1: não há multicolinearidade entre as variáveis
+- VIF &gt; 2 ou VIF &gt; 5 ou VIF &gt; 10: indica alta multicolinearidade (depende do autor)
+&lt;br&gt;&lt;br&gt;
+- `\(VIF_i = \dfrac{1}{1 - R_i^2}\)`
+
+- (a) r = 0.8946 e VIF = 5.007
+- (b) r = 0.7697 e VIF = 2.453
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+[Zuur et al. (2010)](https://onlinelibrary.wiley.com/doi/10.1111/j.2041-210X.2009.00001.x),
+[Dormann et al. (2012)]( https://doi.org/10.1111/j.1600-0587.2012.07348.x),
+[Naimi et al. (2014)]( https://doi.org/10.1111/j.1600-0587.2013.00205.x),
+[Feng et al. 2019](http://www.nature.com/articles/s41559-019-0972-5),
+[VIF](https://www.sciencedirect.com/topics/mathematics/variance-inflation-factor)
+
+---
+
+class: inverse, center, middle
+
+# Dúvidas?
+
+---
+
+class: inverse, center, middle
+
+# Bora voltar para o R para baixar as variáveis!
+
+---
+
+class: inverse, center, middle
+
+# Encerramos por hoje =]
+
+---
+
+## Brunno F. Oliveira
+
+&lt;br&gt;&lt;br&gt;
+
+Contatos:
+
+&lt;svg viewBox="0 0 512 512" style="height:1em;position:relative;display:inline-block;top:.1em;fill:#23373b;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"&gt;&lt;/path&gt;&lt;/svg&gt; [brunno.oliveira@me.com]()  
+&lt;svg viewBox="0 0 512 512" style="height:1em;position:relative;display:inline-block;top:.1em;fill:#23373b;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"&gt;&lt;/path&gt;&lt;/svg&gt; [https://oliveirabrunno.wordpress.com/](https://oliveirabrunno.wordpress.com/)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+Slides criados via pacote [xaringan](https://github.com/yihui/xaringan) e tema [Metropolis](https://github.com/pat-s/xaringan-metropolis). Animação dos sapos por [@probzz](https://twitter.com/probzz/status/1367613720294170627).
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "rainbow",
+"highlightLines": false,
+"highlightSpans": true,
+"countIncrementalSlides": false,
+"slideNumberFormat": "%current%/%total%",
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
