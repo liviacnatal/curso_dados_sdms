@@ -2,6 +2,9 @@
 .Rhistory
 .Rapp.history
 
+# files that I dont need to be pushed
+Notas Brunno.docx
+
 # Session Data files
 .RData
 

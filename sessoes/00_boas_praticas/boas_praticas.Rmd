@@ -1,7 +1,7 @@
 ---
 title: "Best Practices with R"
 author: "Juliano Palacios Abrantes"
-date: '2019-10-16'
+date: "Última atualização `r Sys.Date()`"
 output:
   pdf_document:
     toc: yes
@@ -89,8 +89,8 @@ Como você sabe, existem muitas maneiras de escrever em R, mas existem maneiras 
 ```{r codigo_o_bom, eval = F, echo = T}
 
 ######---------------------------- LEIA-ME ------------- --------------#####
-# Este é o código para ministrar o workshop "Melhores Práticas com R" para o grupo FOL
-# Foi desenvolvido por Juliano Palacios em outubro de 2019
+# Este é o código para ministrar o curso de modelagem de distribução de espécies R" na UFRN
+# Foi desenvolvido por Juliano Palacios em outubro de 2019 e atualizado em 2024
 ######---------------------------------------------------------- ---------------------#####
 
 

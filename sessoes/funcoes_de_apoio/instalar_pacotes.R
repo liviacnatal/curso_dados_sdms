@@ -10,7 +10,9 @@ packages <- c("tidyverse",
               "tools", # for loading shapefiles
               "here", # for easy paths
               "rnaturalearth",
-              "viridis" # color-blind friendly pallets
+              "viridis", # color-blind friendly pallets
+              "biomod2", #Species distribution modls
+              "raster" # spatial analysis
 )
 
 ipak(packages)

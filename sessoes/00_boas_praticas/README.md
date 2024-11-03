@@ -1,7 +1,7 @@
 ---
 title: "O Bom, o Mau e o Feio da Programação em R..."
 author: "Juliano Palacios Abrantes"
-date: '2019-10-16'
+date: "Última atualização 2024-11-03"
 output:
   html_document:
     keep_md: yes
