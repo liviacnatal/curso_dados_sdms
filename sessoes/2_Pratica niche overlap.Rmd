@@ -1,0 +1,248 @@
+---
+title: "Quantificação de nicho e sobreposição com `Ecospat`"
+author: "Brunno F Oliveira"
+# date: "2024-11-03"
+output: html_document
+---
+
+
+O pacote `ecospat` [Cola et al. 2017](https://doi.org/10.1111/ecog.02671) fornece código para quantificar e comparar o nicho ambiental e geográfico de duas espécies, ou da mesma espécie em diferentes contextos (por exemplo, em suas áreas nativas e invadidas). A vinheta incluída explica como fazer tais análises..
+
+Para isso você irá precisar de uma matriz de registros de ocorrência, juntamente com os dados climáticos para cada um desses registros. Em nosso trabalho, normalmente temos que construir essas matrizes a partir de dados de observação (registros de herbário, observações do iNaturalist, etc.) e rasters climáticos (por exemplo, [Fick and Hijmans 2017](https://doi.org/10.1002/joc.5086)). Este breve tutorial explicará as etapas necessárias para fazer isso.
+
+# Pacotes
+
+Além do ecospat, usaremos `terra` ([Hijmans et al. 2024](https://CRAN.R-project.org/package=terra)), para manipular os dados espaciais, `geodata` para baixar WorldClim ([Fick and Hijmans 2017](https://doi.org/10.1002/joc.5086)) rasters e; `rgbif` ([Chamberlain et al. 2021](https://CRAN.R-project.org/package=rgbif)) para baixar registros GBIF, `maptools` ([Bivand e Lewin-Koh 2021](https://CRAN.R-project.org/package=maptools)) para obter um mapa base mundial para gráficos e `ade4` ([Dray et al. 2024](https://adeverse.github.io/ade4/)) para calcular PCAs.
+
+```{r message=FALSE, warning=FALSE}
+library(ecospat)
+library(terra)
+library(rgbif)
+library(maptools)
+library(geodata)
+library(tidyverse)
+library(ade4)
+```
+
+# Obtendo dados
+
+Começaremos obtendo nossos dados. Para observações, vamos dar uma olhada em *Prosopis juliflora*, uma espécie nativa do Peru e invasora no Nordeste brasileiro. Para um trabalho de pesquisa real, normalmente baixo os arquivos diretamente do GBIF e os examino cuidadosamente para verificar se há erros ou dados ausentes. Para esta demonstração, usaremos o pacote rgbif para baixar os dados diretamente no R e assumiremos que não há problemas.
+
+```{r eval=FALSE}
+pjGBIF <- occ_search(scientificName = "Prosopis juliflora",
+                     limit = 10000,
+                     basisOfRecord = c("Preserved_Specimen"),
+                     hasCoordinate = TRUE,
+                     fields = c("decimalLatitude",
+                                "decimalLongitude", "year",
+                                "country", "countryCode"))
+
+save(pjGBIF, file = "../data/pj-gbif-recs.Rda")
+```
+
+
+
+```{r}
+load("../data/pj-gbif-recs.Rda")
+pjOccs <- pjGBIF$data
+```
+
+Isso retornou um objeto com registros `r pjGBIF$meta$count``. Eu salvei isso localmente, para que eu não esteja fazendo o GBIF pesquisar seu banco de dados toda vez que eu trabalhar nesta demonstração.
+
+
+`pjGBIF$data` é a tabela com os registros reais. É com isso que trabalharemos. Os outros componentes de `pjGBIF` são metadados relacionados à pesquisa GBIF original. Isso é útil, mas não é necessário para o restante deste exemplo.
+
+Em seguida, informamos ao R quais colunas são as coordenadas, o que nos permite mapear as observações. Isso também converte nossa matriz de observação em um objeto `SpatialPointsDataFrame`.
+
+```{r}
+
+pjOccs <- vect(pjOccs, geom = c("decimalLongitude",
+                                "decimalLatitude"))
+data(wrld_simpl) # load the maptools worldmap
+
+wrld_simpl <- vect(wrld_simpl)
+
+par(mar = c(0,0, 0, 0))
+plot(wrld_simpl, border = "gray80")
+points(pjOccs, pch = 16, col = 2, cex = 0.3)
+
+```
+
+Para obter nossos dados climáticos, podemos usar a função `worldclim_global` do pacote `geodata`. Na primeira vez que você chama essa função em um diretório, ela baixa os dados da internet e os salva localmente. Chamadas subsequentes carregarão sua cópia local dos dados para acelerar as coisas. Estou usando a resolução mais grosseira (10 minutos ~ 300km2 ~ 2.5 Degrees) para acelerar as coisas para esta demonstração:
+
+```{r}
+wclim <- worldclim_global("bio", res = 10,
+                          path = "../data")
+```
+
+Podemos dar uma olhada em uma camada:
+
+```{r}
+par(mar = c(0,0, 3, 1))
+plot(wclim[["wc2.1_10m_bio_1"]], main = "bio1")
+```
+
+
+Em seguida, precisamos extrair os valores ambientais dos rasters climáticos para cada um dos nossos registros de observação:
+
+```{r}
+pjOccs <- cbind(pjOccs, terra::extract(wclim,pjOccs))
+```
+
+No processo de extração de valores wclim para nossas observações, geralmente acabamos com alguns valores ausentes. Isto é uma consequência de incompatibilidades entre as coordenadas de observação e os rasters climáticos. Em alguns casos, as observações são colocadas na costa do oceano, ou em outra área onde não há dados climáticos disponíveis. Precisamos excluir esses valores ausentes de nossa análise.
+
+```{r}
+pjOccs <- pjOccs[complete.cases(data.frame(pjOccs)), ]
+```
+
+# Dividindo Dados
+
+Neste ponto, todos os dados que precisamos para a análise de Quantificação de Nicho estão em pjOccs e wclimMat. Precisamos dividir esses dados em regiões nativas e invasivas para nossa comparação. Vamos nos restringir ao continente Americano, e considerar todos os registros entre 120 e 60 graus oeste, e entre 10 graus ao sul a 40 graus ao Norte como nativos. Consideramos todos os registros do Brasil como invasivos.
+
+Eu criei extensões para cobrir os contornos grosseiros das áreas em questão. Na prática, você pode usar um mapa vetorial construído com mais cuidado para dividir seus dados.
+
+```{r}
+# regiao native de P. julifora
+e <- ext(-120, -60, -10, 40) 
+pj_native_area <- vect(e)
+
+plot(wrld_simpl, border = "gray80", main = "Região nativa de P. julifora")
+points(pjOccs, pch = 16, col = 2, cex = 0.3)
+plot(pj_native_area,add=TRUE)
+
+# selecione as ocorrencias dentro da região nativa
+pj_native <- crop(pjOccs, pj_native_area)
+
+# selecione as ocorrencias dentro da região invasiva
+pj_invasive_area <- subset(wrld_simpl, wrld_simpl$NAME == "Brazil")
+pj_invasive <- crop(pjOccs, pj_invasive_area)
+
+plot(wrld_simpl, xlim = c(-120, -10), ylim = c(-40, 40), 
+     axes = FALSE, border = "gray80", main = "Regiões nativas e invasivas de P. julifora")
+points(pj_native, pch = 16, col = "green", cex = 0.3)
+points(pj_invasive, pch = 16, col = "red", cex = 0.3)
+
+```
+
+Para a quantificação de nicho, precisamos ter uma matriz com o ambiente de fundo (*background*) presente nas áreas nativa e invasiva, bem como o ambiente "global" completo, incluindo a extensão combinada dos ambientes nativo e introduzido. Após o corte, usamos a função `values` do pacote `terra` para converter o raster em um `dataframe`.
+
+```{r}
+## Crop Climate Layers:
+naEnvR <- crop(wclim, pj_native_area)
+invEnvR <- crop(wclim, pj_invasive_area)
+
+## Extract values to matrix:
+naEnvM <- values(naEnvR)
+invEnvM <- values(invEnvR)
+
+## Clean out missing values:
+naEnvM <- naEnvM[complete.cases(naEnvM), ]
+invEnvM <- invEnvM[complete.cases(invEnvM), ]
+
+## Combined global environment:
+globalEnvM <- rbind(naEnvM, invEnvM)
+```
+
+
+# Quantificação de nicho
+## PCA
+
+A análise de quantificação de nicho começa com uma análise de componentes principais dos dados ambientais. A ordenação real usa os dados globais, com os registros de observação e o ambiente de fundo nativo e invasivo tratados como linhas suplementares.
+
+```{r}
+pca.clim <- dudi.pca(globalEnvM, center = TRUE,
+                     scale = TRUE, scannf = FALSE, nf = 2)
+global.scores <- pca.clim$li
+
+pj.native.scores <-
+  suprow(pca.clim,
+         data.frame(pj_native)[, colnames(globalEnvM)])$li   
+pj.invasive.scores <-
+  suprow(pca.clim,
+         data.frame(pj_invasive)[, colnames(globalEnvM)])$li
+
+nativeEnv.scores <- suprow(pca.clim, naEnvM)$li
+invasiveEnv.scores <- suprow(pca.clim, invEnvM)$li
+```
+
+
+Vamos analisar isso. `dudi.pca` faz uma análise PCA em `globalEnvM`, que é uma matriz de todas as variáveis ambientais em toda a área de estudo. Usamos isso para criar um resumo bidimensional da variabilidade ambiental total.
+
+Em seguida, mapeamos nossos dados de observação (`pj_native` e `pj_invasive`) nessa ordenação bidimensional, usando a função `suprow`. `pj_native` e `pj_invasive` são objetos `SpatVector`. Às vezes, você pode tratá-los como se fossem `data.frames`, mas outras vezes você precisa convertê-los explicitamente. Esta é uma dessas vezes, por isso os envolvi em `data.frame()`.
+
+Lembre-se de que `pj_native` e `pj_invasive` têm mais colunas do que a matriz ambiental: eles também incluem ano, countryCode, país. Queremos incluir apenas as variáveis ambientais quando você projeta as observações na ordenação. Para garantir que usamos as mesmas variáveis da ordenação original de `globalEnvM`, na mesma ordem, seleciono as colunas explicitamente para corresponder a esse objeto:
+
+```{r}
+head(data.frame(pj_native)[, colnames(globalEnvM)])
+```
+
+O output de `dudi.pca` e `suprow` inclui muitas informações que não estamos usando aqui. Precisamos apenas do elemento `li`, então selecionei isso de cada uma das saídas da função.
+
+## Grade de densidades de ocorrência
+
+Finalmente, estamos prontos para fazer a quantificação/comparações de nicho. Usaremos as pontuações PCA para o ambiente global, os ambientes nativo e invasivo e os registros de ocorrência nativo e invasivo.
+
+```{r}
+nativeGrid <- ecospat.grid.clim.dyn(global.scores,
+                                    nativeEnv.scores,
+                                    pj.native.scores)
+
+invasiveGrid <- ecospat.grid.clim.dyn(global.scores,
+                                      invasiveEnv.scores, 
+                                      pj.invasive.scores)
+
+ecospat.plot.niche.dyn(nativeGrid, invasiveGrid, intersection = 0.05) 
+```
+
+O gráfico resultante nos mostra as condições ambientais presentes em Nativo (dentro da linha verde) e Invasivo (dentro da linha vermelha). A área verde representa ambientes ocupados por *P. julifora* em sua região nativa, mas não na região invasora, a área vermelha mostra ambientes ocupados na região invasora e não nativa, e a área azul mostra ambientes ocupados em ambas as faixas. Podemos ver que não há áreas na região invasora que não estejam ocupadas na região nativa. O que a pequena área sobreposta dentro da área nativa sugere?
+
+Você também pode aplicar essa análise a localizações geográficas, em vez de condições ambientais. Isso não fará muito sentido para comparações de faixas nativas vs invadidas, mas pode ser útil para comparar diferentes espécies dentro da mesma área.
+
+Para demonstrar, vamos comparar a distribuição de *P. juliflora* no Brasil antes e depois de 1990 Usamos coordenadas geográficas aqui, então não há necessidade de um PCA. Precisamos gerar as coordenadas de "fundo". Usarei expand.grid para criar os locais para isso. Eu dividi a extensão invadida em grades de 500 x 500.
+
+```{r}
+
+pjInvearly <- subset(pj_invasive, pj_invasive$year <= 1990)
+pjInvlate <- subset(pj_invasive, pj_invasive$year > 1990)
+
+geoGrid <- expand.grid(longitude =
+                         seq(-60, -10, length.out = 500),
+                       latitude =
+                         seq(-40, 0, length.out = 500))
+
+earlyGeoGrid <- ecospat.grid.clim.dyn(geoGrid, geoGrid,
+                                      terra::geom(pjInvearly)[,c(3,4)])
+
+lateGeoGrid <- ecospat.grid.clim.dyn(geoGrid, geoGrid,
+                                     terra::geom(pjInvlate)[,c(3,4)])
+
+ecospat.plot.niche.dyn(earlyGeoGrid, lateGeoGrid, quant = 0)
+plot(wrld_simpl, add = TRUE)
+```
+
+
+Isso parece mostrar que *P. juliflora* está restrita às regiões do nordeste brasileiro com pouca ou nenhuma expansão se compararmos a ocorrência antes e depois de 1990.
+
+Observe que `ecospat` usa uma fórmula de densidade de kernel para modelar as distribuições de ocorrência. Como consequência, ele se projeta para o oceano, o que não é muito realista. Para corrigir isso, precisamos mascarar a análise para a massa continental. Isso requer que tenhamos um mapa vetorial da área desejada.
+
+
+```{r}
+earlyGeoGrid <- ecospat.grid.clim.dyn(geoGrid, geoGrid,
+                                      terra::geom(pjInvearly)[,c(3,4)],
+                                      geomask = wrld_simpl)
+
+lateGeoGrid <- ecospat.grid.clim.dyn(geoGrid, geoGrid,
+                                     terra::geom(pjInvlate)[,c(3,4)],
+                                      geomask = wrld_simpl)
+
+ecospat.plot.niche.dyn(earlyGeoGrid, lateGeoGrid, quant = 0)
+plot(wrld_simpl, add = TRUE)
+```
+
+Isso dá resultados mais razoáveis.
+
+# Resumo
+
+Esta é uma visão geral bastante rápida deste fluxo de trabalho. Você quase certamente vai querer considerar um olhar mais aprofundado de suas observações, entre outros procedimentos de limpeza de dados. Eu também defini a extensão do estudo de forma muito grosseira. Isso pode ser apropriado para estudos de grande escala (globais). Mas você normalmente vai querer pensar um pouco mais cuidadosamente sobre como definir sua extensão. A maneira como você processa seus dados também será diferente dependendo do seu contexto.
+
+***
