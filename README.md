@@ -90,4 +90,4 @@ Caso nao funcionar, navegue ate o arquivo, abra e execute o script de forma manu
 - [Ciência de Dados em R]([https://rafalab.dfci.harvard.edu/dslivro/](https://livro.curso-r.com/index.html))
 
 # Participantes do curso
-
+Williams
