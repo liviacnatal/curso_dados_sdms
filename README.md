@@ -91,3 +91,5 @@ Caso nao funcionar, navegue ate o arquivo, abra e execute o script de forma manu
 
 # Participantes do curso
 
+Juliana Luz
+
