@@ -100,4 +100,3 @@ Caso nao funcionar, navegue ate o arquivo, abra e execute o script de forma manu
 - Raiane Vital
 - Salu Coêlho da Silva
 - Juliana Luz
-
