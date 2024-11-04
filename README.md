@@ -90,12 +90,14 @@ Caso nao funcionar, navegue ate o arquivo, abra e execute o script de forma manu
 - [Ciência de Dados em R]([https://rafalab.dfci.harvard.edu/dslivro/](https://livro.curso-r.com/index.html))
 
 
-
 # Participantes do curso 
-Williams
-Yuri Abrantes
-Alisson Peter Brito Dopona
-Dorgival Diógenes
-Raiane Vital
-Salu Coêlho da Silva
-Juliana Luz
+
+- Gabriela Neres de Oliveira e Silva
+- Williams
+- Yuri Abrantes
+- Alisson Peter Brito Dopona
+- Dorgival Diógenes
+- Raiane Vital
+- Salu Coêlho da Silva
+- Juliana Luz
+
