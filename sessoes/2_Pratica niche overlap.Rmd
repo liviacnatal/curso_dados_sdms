@@ -140,7 +140,7 @@ nat_env_mat <- nat_env_mat[complete.cases(nat_env_mat), ]
 inv_env_mat <- inv_env_mat[complete.cases(inv_env_mat), ]
 
 ## Combined global environment:
-global_env_mat <- rbind(nat_env_mat, inv_env_mat)
+global_env_mat <- rbind(nat_env_mat, inv_env_mat) 
 ```
 
 
