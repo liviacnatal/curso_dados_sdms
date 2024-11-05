@@ -12,16 +12,18 @@ Para isso você irá precisar de uma matriz de registros de ocorrência, juntame
 
 # Pacotes
 
-Além do ecospat, usaremos `terra` ([Hijmans et al. 2024](https://CRAN.R-project.org/package=terra)), para manipular os dados espaciais, `geodata` para baixar WorldClim ([Fick and Hijmans 2017](https://doi.org/10.1002/joc.5086)) rasters e; `rgbif` ([Chamberlain et al. 2021](https://CRAN.R-project.org/package=rgbif)) para baixar registros GBIF, `maptools` ([Bivand e Lewin-Koh 2021](https://CRAN.R-project.org/package=maptools)) para obter um mapa base mundial para gráficos e `ade4` ([Dray et al. 2024](https://adeverse.github.io/ade4/)) para calcular PCAs.
+Além do ecospat, usaremos `terra` ([Hijmans et al. 2024](https://CRAN.R-project.org/package=terra)), para manipular os dados espaciais, `geodata` para baixar WorldClim ([Fick and Hijmans 2017](https://doi.org/10.1002/joc.5086)) rasters e; `rgbif` ([Chamberlain et al. 2021](https://CRAN.R-project.org/package=rgbif)) para baixar registros GBIF, `rnaturalearth` ([Massicotte et al.  2023](https://CRAN.R-project.org/package=rnaturalearth)) para obter um mapa base mundial para gráficos e `ade4` ([Dray et al. 2024](https://adeverse.github.io/ade4/)) para calcular PCAs.
 
 ```{r message=FALSE, warning=FALSE}
+
 library(ecospat)
 library(terra)
 library(rgbif)
-library(maptools)
+library(rnaturalearth)
 library(geodata)
 library(tidyverse)
 library(ade4)
+
 ```
 
 # Obtendo dados
@@ -58,8 +60,8 @@ Em seguida, informamos ao R quais colunas são as coordenadas, o que nos permite
 
 pj_occ <- vect(pj_occ, geom = c("decimalLongitude",
                                 "decimalLatitude"))
-data(wrld_simpl) # load the maptools worldmap
 
+wrld_simpl <- countries110
 wrld_simpl <- vect(wrld_simpl)
 
 par(mar = c(0,0, 0, 0))
@@ -72,7 +74,9 @@ Para obter nossos dados climáticos, podemos usar a função `worldclim_global` 
 
 ```{r}
 wclim <- worldclim_global("bio", res = 10,
-                          path = "../data")
+                          path = "data")
+
+wclim
 ```
 
 Podemos dar uma olhada em uma camada:
@@ -103,8 +107,7 @@ Eu criei extensões para cobrir os contornos grosseiros das áreas em questão. 
 
 ```{r}
 # regiao native de P. julifora
-e <- ext(-120, -60, -10, 40) 
-pj_occ_nat_area <- vect(e)
+pj_occ_nat_area <- ext(-120, -60, -10, 40) 
 
 plot(wrld_simpl, border = "gray80", main = "Região nativa de P. julifora")
 points(pj_occ, pch = 16, col = 2, cex = 0.3)
@@ -114,7 +117,8 @@ plot(pj_occ_nat_area,add=TRUE)
 pj_occ_nat <- crop(pj_occ, pj_occ_nat_area)
 
 # selecione as ocorrencias dentro da região invasiva
-pj_occ_inv_area <- subset(wrld_simpl, wrld_simpl$NAME == "Brazil")
+pj_occ_inv_area <- subset(wrld_simpl, 
+                          wrld_simpl$NAME == "Brazil")
 pj_occ_inv <- crop(pj_occ, pj_occ_inv_area)
 
 plot(wrld_simpl, xlim = c(-120, -10), ylim = c(-40, 40), 
@@ -151,7 +155,8 @@ A análise de quantificação de nicho começa com uma análise de componentes p
 
 ```{r}
 pca_clim <- dudi.pca(global_env_mat, center = TRUE,
-                     scale = TRUE, scannf = FALSE, nf = 2)
+                     scale = TRUE, scannf = FALSE, 
+                     nf = 2)
 global_scores <- pca_clim$li
 
 pj_native_scores <-
@@ -163,6 +168,7 @@ pj_invasive_scores <-
 
 native_env_scores <- suprow(pca_clim, nat_env_mat)$li
 invasive_env_scores <- suprow(pca_clim, inv_env_mat)$li
+
 ```
 
 
@@ -184,12 +190,12 @@ Finalmente, estamos prontos para fazer a quantificação/comparações de nicho.
 
 ```{r}
 native_grid <- ecospat.grid.clim.dyn(global_scores,
-                                    native_env_scores,
-                                    pj_native_scores)
+                                     native_env_scores,
+                                     pj_native_scores)
 
 invasive_grid <- ecospat.grid.clim.dyn(global_scores,
-                                      invasive_env_scores, 
-                                      pj_invasive_scores)
+                                       invasive_env_scores, 
+                                       pj_invasive_scores)
 
 ecospat.plot.niche.dyn(native_grid, invasive_grid, intersection = 0.05) 
 ```
@@ -202,19 +208,23 @@ Para demonstrar, vamos comparar a distribuição de *P. juliflora* no Brasil ant
 
 ```{r}
 
-pj_inv_early <- subset(pj_occ_inv, pj_occ_inv$year <= 1990)
-pj_inv_late <- subset(pj_occ_inv, pj_occ_inv$year > 1990)
+pj_inv_early <- subset(pj_occ_inv, 
+                       pj_occ_inv$year <= 1990)
+pj_inv_late <- subset(pj_occ_inv, 
+                      pj_occ_inv$year > 1990)
 
 geo_grid <- expand.grid(longitude =
-                         seq(-60, -10, length.out = 500),
-                       latitude =
-                         seq(-40, 0, length.out = 500))
+                          seq(-60, -10, length.out = 500),
+                        latitude =
+                          seq(-40, 0, length.out = 500))
 
-early_geo_grid <- ecospat.grid.clim.dyn(geo_grid, geo_grid,
-                                      terra::geom(pj_inv_early)[,c(3,4)])
+early_geo_grid <- ecospat.grid.clim.dyn(
+  geo_grid, geo_grid,
+                                        terra::geom(pj_inv_early)[,c(3,4)])
 
-late_geo_grid <- ecospat.grid.clim.dyn(geo_grid, geo_grid,
-                                     terra::geom(pj_inv_late)[,c(3,4)])
+late_geo_grid <- ecospat.grid.clim.dyn(
+  geo_grid, geo_grid,
+                                       terra::geom(pj_inv_late)[,c(3,4)])
 
 ecospat.plot.niche.dyn(early_geo_grid, late_geo_grid, quant = 0)
 plot(wrld_simpl, add = TRUE)
@@ -228,12 +238,12 @@ Observe que `ecospat` usa uma fórmula de densidade de kernel para modelar as di
 
 ```{r}
 early_geo_grid <- ecospat.grid.clim.dyn(geo_grid, geo_grid,
-                                      terra::geom(pj_inv_early)[,c(3,4)],
-                                      geomask = wrld_simpl)
+                                        terra::geom(pj_inv_early)[,c(3,4)],
+                                        geomask = wrld_simpl)
 
 late_geo_grid <- ecospat.grid.clim.dyn(geo_grid, geo_grid,
-                                     terra::geom(pj_inv_late)[,c(3,4)],
-                                      geomask = wrld_simpl)
+                                       terra::geom(pj_inv_late)[,c(3,4)],
+                                       geomask = wrld_simpl)
 
 ecospat.plot.niche.dyn(early_geo_grid, late_geo_grid, quant = 0)
 plot(wrld_simpl, add = TRUE)
