@@ -82,47 +82,9 @@ obs_data <-data.frame(DATA) %>%
 
 obs_data <- read_csv("obs_data.csv")
 
-obs_data_world <- coords %>% 
+occ_data_world <- coords %>% 
   left_join(obs_data)
   
-# Extract observations for the whole world (myResp)
-N<-dim(coords)
-OCC<-matrix(NA,N[1],1)
-OCC[obs_data$IDX,]<-obs_data$obs
-biomod_obs <- data.frame(OCC) # OJO CON ESTA BASE DE DATOS QUE ES LA QUE SE MODIFICA
-rm(OCC)
-
-
-#  ver distribuçao
-bind_cols(biomod_obs,coords) %>% 
-ggplot() +
-  geom_tile(
-    aes(
-      x = lon,
-      y = lat,
-      fill = OCC
-    )
-  )
-
-# Extract observations for the whole world (myResp)
-N<-dim(coords)
-OCC<-matrix(NA,N[1],1)
-OCC[obs_data$IDX,]<-df$OCC
-biomod_obs <- data.frame(OCC) # OJO CON ESTA BASE DE DATOS QUE ES LA QUE SE MODIFICA
-rm(OCC)
-
-# CLEAN DATASET
-obs_data <- biomod_obs %>%
-  bind_cols(grid_df) %>%
-  # MODIFICA EL CORTE LATITUDINAL Y LONGITUDINAL DE LA DATA
-  # filter(
-    # longitude < -40,
-         # longitude > -100,
-         # latitude < 0
-         # latitude > -60
-         # ) %>%
-  select(idmol720shp,1:3) %>%
-  arrange(idmol720shp)
 
 ```
 
@@ -168,12 +130,12 @@ model_thresh <- c(0.7,0.7)
 ```{r}
 
 
-coordinates(occurrences) <- ~longitude+latitude
-proj4string(occurrences) <- CRS(proj4string(env_data))
+coordinates(occ) <- ~longitude+latitude
+proj4string(occ) <- CRS(proj4string(env_data))
 
 
 biomod_data <- BIOMOD_Data(
-  resp.var = occurrences,
+  resp.var = occ_data,
   expl.var = env_data,
   resp.name = "Species1",
   PA.strategy = "random",
@@ -182,19 +144,19 @@ biomod_data <- BIOMOD_Data(
   PA.max.dist = NULL
 )
 
-# Biomod formatted data
+# Biomod formato de dados
 # Note, occ_biomod_NA needs to have NA!
 myBiomodData <- BIOMOD_FormatingData(
-  resp.var = SpatialPointsDataFrame(env_da,
-                                    to_biomod_obs,
+  resp.var = SpatialPointsDataFrame(env_data,
+                                    occ,
                                     proj4string = CRS("+proj=longlat +datum=WGS84")
   ), # Response variable
   expl.var = SpatialPointsDataFrame(coords, 
-                                    to_biomod_env, 
+                                    env_data, 
                                     proj4string = CRS("+proj=longlat +datum=WGS84")
   ), #explanatory variable
-  resp.name = species_model$sci_name,
-  PA.nb.rep = 3, # NUmber of batch pseudo absent (at least 3)
+  resp.name = "Species_Name",
+  PA.nb.rep = 3, # Numero de pseudo absent (at least 3) se voce so tiver dados de presenca, entao 0
   PA.nb.absences = n_presence,
   PA.strategy = 'random'
 )
@@ -205,12 +167,10 @@ myBiomodData <- BIOMOD_FormatingData(
 
 ```{r}
 
-
-
 models <- BIOMOD_Modeling(
   data = biomod_data,
-  models = c("GLM", "RF", "ANN"), #Escolha os alrotimos que você deseja
-  models.options = BIOMOD_ModelingOptions(),
+  models = mds_algo,
+  models.options = NULL,
   NbRunEval = 10,
   DataSplit = 80,
   Prevalence = 0.5
@@ -221,11 +181,48 @@ models <- BIOMOD_Modeling(
 
 # Avaliações de modelo
 
+Depois de executar os modelos, você pode avaliar seu desempenho usando diversas métricas de avaliação (por exemplo, AUC, TOC, etc.). biomod2 fornece automaticamente métricas de validação cruzada.
+
 ```{r}
 
+# Avaliar o performance do modelo
+biomod_model_evaluation <- BIOMOD_Validation(
+  biomod_model,
+  metrics = c('TSS', 'AUC', 'ROC')
+)
 
-eval <- BIOMOD_EnsembleModeling(models)
-print(eval)
-
+# Mostrar resultados
+print(biomod_model_evaluation)
 
 ```
+
+
+# Avaliações de modelo
+
+```{r}
+
+# Extrair os resultados da aviliacao 
+eval_results <- BIOMOD_ModelEvaluation(
+  modeling.output = biomod_model
+)
+
+# Plot do ROC Curve para cada modelo
+plot(eval_results)
+```
+
+# Predição futura
+
+Depois que os modelos forem treinados e avaliados, você poderá usá-los para fazer previsões sobre novos dados ambientais ou grades espaciais.
+
+```{r}
+# Faça previsões usando os modelos treinados
+predictions <- BIOMOD_Projection(
+  modeling.output = biomod_model,
+  new.env = raster_data,  # NOTA JEPA: Novos dados ambientais
+  proj.name = "Future_Prediction"
+)
+
+# Plotdas projeções (mapa de adequação do habitat previsto)
+plot(predictions)
+```
+
