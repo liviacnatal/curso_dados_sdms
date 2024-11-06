@@ -12,16 +12,18 @@ Para isso você irá precisar de uma matriz de registros de ocorrência, juntame
 
 # Pacotes
 
-Além do ecospat, usaremos `terra` ([Hijmans et al. 2024](https://CRAN.R-project.org/package=terra)), para manipular os dados espaciais, `geodata` para baixar WorldClim ([Fick and Hijmans 2017](https://doi.org/10.1002/joc.5086)) rasters e; `rgbif` ([Chamberlain et al. 2021](https://CRAN.R-project.org/package=rgbif)) para baixar registros GBIF, `maptools` ([Bivand e Lewin-Koh 2021](https://CRAN.R-project.org/package=maptools)) para obter um mapa base mundial para gráficos e `ade4` ([Dray et al. 2024](https://adeverse.github.io/ade4/)) para calcular PCAs.
+Além do ecospat, usaremos `terra` ([Hijmans et al. 2024](https://CRAN.R-project.org/package=terra)), para manipular os dados espaciais, `geodata` para baixar WorldClim ([Fick and Hijmans 2017](https://doi.org/10.1002/joc.5086)) rasters e; `rgbif` ([Chamberlain et al. 2021](https://CRAN.R-project.org/package=rgbif)) para baixar registros GBIF, `rnaturalearth` ([Massicotte et al.  2023](https://CRAN.R-project.org/package=rnaturalearth)) para obter um mapa base mundial para gráficos e `ade4` ([Dray et al. 2024](https://adeverse.github.io/ade4/)) para calcular PCAs.
 
 ```{r message=FALSE, warning=FALSE}
+
 library(ecospat)
 library(terra)
 library(rgbif)
-library(maptools)
+library(rnaturalearth)
 library(geodata)
 library(tidyverse)
 library(ade4)
+
 ```
 
 # Obtendo dados
@@ -44,7 +46,7 @@ save(pjGBIF, file = "../data/pj-gbif-recs.Rda")
 
 ```{r}
 load("../data/pj-gbif-recs.Rda")
-pjOccs <- pjGBIF$data
+pj_occ <- pjGBIF$data
 ```
 
 Isso retornou um objeto com registros `r pjGBIF$meta$count``. Eu salvei isso localmente, para que eu não esteja fazendo o GBIF pesquisar seu banco de dados toda vez que eu trabalhar nesta demonstração.
@@ -56,15 +58,15 @@ Em seguida, informamos ao R quais colunas são as coordenadas, o que nos permite
 
 ```{r}
 
-pjOccs <- vect(pjOccs, geom = c("decimalLongitude",
+pj_occ <- vect(pj_occ, geom = c("decimalLongitude",
                                 "decimalLatitude"))
-data(wrld_simpl) # load the maptools worldmap
 
+wrld_simpl <- countries110
 wrld_simpl <- vect(wrld_simpl)
 
 par(mar = c(0,0, 0, 0))
 plot(wrld_simpl, border = "gray80")
-points(pjOccs, pch = 16, col = 2, cex = 0.3)
+points(pj_occ, pch = 16, col = 2, cex = 0.3)
 
 ```
 
@@ -72,7 +74,9 @@ Para obter nossos dados climáticos, podemos usar a função `worldclim_global` 
 
 ```{r}
 wclim <- worldclim_global("bio", res = 10,
-                          path = "../data")
+                          path = "data")
+
+wclim
 ```
 
 Podemos dar uma olhada em uma camada:
@@ -86,41 +90,41 @@ plot(wclim[["wc2.1_10m_bio_1"]], main = "bio1")
 Em seguida, precisamos extrair os valores ambientais dos rasters climáticos para cada um dos nossos registros de observação:
 
 ```{r}
-pjOccs <- cbind(pjOccs, terra::extract(wclim,pjOccs))
+pj_occ <- cbind(pj_occ, terra::extract(wclim,pj_occ))
 ```
 
 No processo de extração de valores wclim para nossas observações, geralmente acabamos com alguns valores ausentes. Isto é uma consequência de incompatibilidades entre as coordenadas de observação e os rasters climáticos. Em alguns casos, as observações são colocadas na costa do oceano, ou em outra área onde não há dados climáticos disponíveis. Precisamos excluir esses valores ausentes de nossa análise.
 
 ```{r}
-pjOccs <- pjOccs[complete.cases(data.frame(pjOccs)), ]
+pj_occ <- pj_occ[complete.cases(data.frame(pj_occ)), ]
 ```
 
 # Dividindo Dados
 
-Neste ponto, todos os dados que precisamos para a análise de Quantificação de Nicho estão em pjOccs e wclimMat. Precisamos dividir esses dados em regiões nativas e invasivas para nossa comparação. Vamos nos restringir ao continente Americano, e considerar todos os registros entre 120 e 60 graus oeste, e entre 10 graus ao sul a 40 graus ao Norte como nativos. Consideramos todos os registros do Brasil como invasivos.
+Neste ponto, todos os dados que precisamos para a análise de Quantificação de Nicho estão em `pj_occ` e `wclim`. Precisamos dividir esses dados em regiões nativas e invasivas para nossa comparação. Vamos nos restringir ao continente Americano, e considerar todos os registros entre 120 e 60 graus oeste, e entre 10 graus ao sul a 40 graus ao Norte como nativos. Consideramos todos os registros do Brasil como invasivos.
 
 Eu criei extensões para cobrir os contornos grosseiros das áreas em questão. Na prática, você pode usar um mapa vetorial construído com mais cuidado para dividir seus dados.
 
 ```{r}
 # regiao native de P. julifora
-e <- ext(-120, -60, -10, 40) 
-pj_native_area <- vect(e)
+pj_occ_nat_area <- ext(-120, -60, -10, 40) 
 
 plot(wrld_simpl, border = "gray80", main = "Região nativa de P. julifora")
-points(pjOccs, pch = 16, col = 2, cex = 0.3)
-plot(pj_native_area,add=TRUE)
+points(pj_occ, pch = 16, col = 2, cex = 0.3)
+plot(pj_occ_nat_area,add=TRUE)
 
 # selecione as ocorrencias dentro da região nativa
-pj_native <- crop(pjOccs, pj_native_area)
+pj_occ_nat <- crop(pj_occ, pj_occ_nat_area)
 
 # selecione as ocorrencias dentro da região invasiva
-pj_invasive_area <- subset(wrld_simpl, wrld_simpl$NAME == "Brazil")
-pj_invasive <- crop(pjOccs, pj_invasive_area)
+pj_occ_inv_area <- subset(wrld_simpl, 
+                          wrld_simpl$NAME == "Brazil")
+pj_occ_inv <- crop(pj_occ, pj_occ_inv_area)
 
 plot(wrld_simpl, xlim = c(-120, -10), ylim = c(-40, 40), 
      axes = FALSE, border = "gray80", main = "Regiões nativas e invasivas de P. julifora")
-points(pj_native, pch = 16, col = "green", cex = 0.3)
-points(pj_invasive, pch = 16, col = "red", cex = 0.3)
+points(pj_occ_nat, pch = 16, col = "green", cex = 0.3)
+points(pj_occ_inv, pch = 16, col = "red", cex = 0.3)
 
 ```
 
@@ -128,19 +132,19 @@ Para a quantificação de nicho, precisamos ter uma matriz com o ambiente de fun
 
 ```{r}
 ## Crop Climate Layers:
-naEnvR <- crop(wclim, pj_native_area)
-invEnvR <- crop(wclim, pj_invasive_area)
+nat_env_region <- crop(wclim, pj_occ_nat_area)
+inv_env_region <- crop(wclim, pj_occ_inv_area)
 
 ## Extract values to matrix:
-naEnvM <- values(naEnvR)
-invEnvM <- values(invEnvR)
+nat_env_mat <- values(nat_env_region)
+inv_env_mat <- values(inv_env_region)
 
 ## Clean out missing values:
-naEnvM <- naEnvM[complete.cases(naEnvM), ]
-invEnvM <- invEnvM[complete.cases(invEnvM), ]
+nat_env_mat <- nat_env_mat[complete.cases(nat_env_mat), ]
+inv_env_mat <- inv_env_mat[complete.cases(inv_env_mat), ]
 
 ## Combined global environment:
-globalEnvM <- rbind(naEnvM, invEnvM)
+global_env_mat <- rbind(nat_env_mat, inv_env_mat) 
 ```
 
 
@@ -150,30 +154,32 @@ globalEnvM <- rbind(naEnvM, invEnvM)
 A análise de quantificação de nicho começa com uma análise de componentes principais dos dados ambientais. A ordenação real usa os dados globais, com os registros de observação e o ambiente de fundo nativo e invasivo tratados como linhas suplementares.
 
 ```{r}
-pca.clim <- dudi.pca(globalEnvM, center = TRUE,
-                     scale = TRUE, scannf = FALSE, nf = 2)
-global.scores <- pca.clim$li
+pca_clim <- dudi.pca(global_env_mat, center = TRUE,
+                     scale = TRUE, scannf = FALSE, 
+                     nf = 2)
+global_scores <- pca_clim$li
 
-pj.native.scores <-
-  suprow(pca.clim,
-         data.frame(pj_native)[, colnames(globalEnvM)])$li   
-pj.invasive.scores <-
-  suprow(pca.clim,
-         data.frame(pj_invasive)[, colnames(globalEnvM)])$li
+pj_native_scores <-
+  suprow(pca_clim,
+         data.frame(pj_occ_nat)[, colnames(global_env_mat)])$li   
+pj_invasive_scores <-
+  suprow(pca_clim,
+         data.frame(pj_occ_inv)[, colnames(global_env_mat)])$li
 
-nativeEnv.scores <- suprow(pca.clim, naEnvM)$li
-invasiveEnv.scores <- suprow(pca.clim, invEnvM)$li
+native_env_scores <- suprow(pca_clim, nat_env_mat)$li
+invasive_env_scores <- suprow(pca_clim, inv_env_mat)$li
+
 ```
 
 
-Vamos analisar isso. `dudi.pca` faz uma análise PCA em `globalEnvM`, que é uma matriz de todas as variáveis ambientais em toda a área de estudo. Usamos isso para criar um resumo bidimensional da variabilidade ambiental total.
+Vamos analisar isso. `dudi.pca` faz uma análise PCA em `global_env_mat`, que é uma matriz de todas as variáveis ambientais em toda a área de estudo. Usamos isso para criar um resumo bidimensional da variabilidade ambiental total.
 
-Em seguida, mapeamos nossos dados de observação (`pj_native` e `pj_invasive`) nessa ordenação bidimensional, usando a função `suprow`. `pj_native` e `pj_invasive` são objetos `SpatVector`. Às vezes, você pode tratá-los como se fossem `data.frames`, mas outras vezes você precisa convertê-los explicitamente. Esta é uma dessas vezes, por isso os envolvi em `data.frame()`.
+Em seguida, mapeamos nossos dados de observação (`pj_occ_nat` e `pj_occ_inv`) nessa ordenação bidimensional, usando a função `suprow`. `pj_occ_nat` e `pj_occ_inv` são objetos `SpatVector`. Às vezes, você pode tratá-los como se fossem `data.frames`, mas outras vezes você precisa convertê-los explicitamente. Esta é uma dessas vezes, por isso os envolvi em `data.frame()`.
 
-Lembre-se de que `pj_native` e `pj_invasive` têm mais colunas do que a matriz ambiental: eles também incluem ano, countryCode, país. Queremos incluir apenas as variáveis ambientais quando você projeta as observações na ordenação. Para garantir que usamos as mesmas variáveis da ordenação original de `globalEnvM`, na mesma ordem, seleciono as colunas explicitamente para corresponder a esse objeto:
+Lembre-se de que `pj_occ_nat` e `pj_occ_inv` têm mais colunas do que a matriz ambiental: eles também incluem ano, countryCode, país. Queremos incluir apenas as variáveis ambientais quando você projeta as observações na ordenação. Para garantir que usamos as mesmas variáveis da ordenação original de `global_env_mat`, na mesma ordem, seleciono as colunas explicitamente para corresponder a esse objeto:
 
 ```{r}
-head(data.frame(pj_native)[, colnames(globalEnvM)])
+head(data.frame(pj_occ_nat)[, colnames(global_env_mat)])
 ```
 
 O output de `dudi.pca` e `suprow` inclui muitas informações que não estamos usando aqui. Precisamos apenas do elemento `li`, então selecionei isso de cada uma das saídas da função.
@@ -183,15 +189,15 @@ O output de `dudi.pca` e `suprow` inclui muitas informações que não estamos u
 Finalmente, estamos prontos para fazer a quantificação/comparações de nicho. Usaremos as pontuações PCA para o ambiente global, os ambientes nativo e invasivo e os registros de ocorrência nativo e invasivo.
 
 ```{r}
-nativeGrid <- ecospat.grid.clim.dyn(global.scores,
-                                    nativeEnv.scores,
-                                    pj.native.scores)
+native_grid <- ecospat.grid.clim.dyn(global_scores,
+                                     native_env_scores,
+                                     pj_native_scores)
 
-invasiveGrid <- ecospat.grid.clim.dyn(global.scores,
-                                      invasiveEnv.scores, 
-                                      pj.invasive.scores)
+invasive_grid <- ecospat.grid.clim.dyn(global_scores,
+                                       invasive_env_scores, 
+                                       pj_invasive_scores)
 
-ecospat.plot.niche.dyn(nativeGrid, invasiveGrid, intersection = 0.05) 
+ecospat.plot.niche.dyn(native_grid, invasive_grid, intersection = 0.05) 
 ```
 
 O gráfico resultante nos mostra as condições ambientais presentes em Nativo (dentro da linha verde) e Invasivo (dentro da linha vermelha). A área verde representa ambientes ocupados por *P. julifora* em sua região nativa, mas não na região invasora, a área vermelha mostra ambientes ocupados na região invasora e não nativa, e a área azul mostra ambientes ocupados em ambas as faixas. Podemos ver que não há áreas na região invasora que não estejam ocupadas na região nativa. O que a pequena área sobreposta dentro da área nativa sugere?
@@ -202,21 +208,25 @@ Para demonstrar, vamos comparar a distribuição de *P. juliflora* no Brasil ant
 
 ```{r}
 
-pjInvearly <- subset(pj_invasive, pj_invasive$year <= 1990)
-pjInvlate <- subset(pj_invasive, pj_invasive$year > 1990)
+pj_inv_early <- subset(pj_occ_inv, 
+                       pj_occ_inv$year <= 1990)
+pj_inv_late <- subset(pj_occ_inv, 
+                      pj_occ_inv$year > 1990)
 
-geoGrid <- expand.grid(longitude =
-                         seq(-60, -10, length.out = 500),
-                       latitude =
-                         seq(-40, 0, length.out = 500))
+geo_grid <- expand.grid(longitude =
+                          seq(-60, -10, length.out = 500),
+                        latitude =
+                          seq(-40, 0, length.out = 500))
 
-earlyGeoGrid <- ecospat.grid.clim.dyn(geoGrid, geoGrid,
-                                      terra::geom(pjInvearly)[,c(3,4)])
+early_geo_grid <- ecospat.grid.clim.dyn(
+  geo_grid, geo_grid,
+                                        terra::geom(pj_inv_early)[,c(3,4)])
 
-lateGeoGrid <- ecospat.grid.clim.dyn(geoGrid, geoGrid,
-                                     terra::geom(pjInvlate)[,c(3,4)])
+late_geo_grid <- ecospat.grid.clim.dyn(
+  geo_grid, geo_grid,
+                                       terra::geom(pj_inv_late)[,c(3,4)])
 
-ecospat.plot.niche.dyn(earlyGeoGrid, lateGeoGrid, quant = 0)
+ecospat.plot.niche.dyn(early_geo_grid, late_geo_grid, quant = 0)
 plot(wrld_simpl, add = TRUE)
 ```
 
@@ -227,15 +237,15 @@ Observe que `ecospat` usa uma fórmula de densidade de kernel para modelar as di
 
 
 ```{r}
-earlyGeoGrid <- ecospat.grid.clim.dyn(geoGrid, geoGrid,
-                                      terra::geom(pjInvearly)[,c(3,4)],
-                                      geomask = wrld_simpl)
+early_geo_grid <- ecospat.grid.clim.dyn(geo_grid, geo_grid,
+                                        terra::geom(pj_inv_early)[,c(3,4)],
+                                        geomask = wrld_simpl)
 
-lateGeoGrid <- ecospat.grid.clim.dyn(geoGrid, geoGrid,
-                                     terra::geom(pjInvlate)[,c(3,4)],
-                                      geomask = wrld_simpl)
+late_geo_grid <- ecospat.grid.clim.dyn(geo_grid, geo_grid,
+                                       terra::geom(pj_inv_late)[,c(3,4)],
+                                       geomask = wrld_simpl)
 
-ecospat.plot.niche.dyn(earlyGeoGrid, lateGeoGrid, quant = 0)
+ecospat.plot.niche.dyn(early_geo_grid, late_geo_grid, quant = 0)
 plot(wrld_simpl, add = TRUE)
 ```
 
