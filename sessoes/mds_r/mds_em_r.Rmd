@@ -1,0 +1,231 @@
+---
+title: "Modelos de distribuição de espécies em R usando o pacote biomod2"
+author: "Juliano Palacios Abrantes"
+date: "Última atualização `r Sys.Date()`"
+output: 
+  html_notebook: 
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+    theme: darkly
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+library(here)
+
+source(paste0(here(),"/sessoes/funcoes_de_apoio/instalar_pacotes.R"))
+
+packages <- c(
+              "sf", # for loading shapefiles
+              "sp",
+              "tools", # for loading shapefiles
+              "here", # for easy paths
+              "rnaturalearth",
+              "viridis", # color-blind friendly pallets
+              "biomod2", 
+              "raster",
+              "janitor",
+              "tidyverse"
+              )
+
+ipak(packages)
+
+# Needs to convert to D2
+# Fix new updates of sf package
+sf::sf_use_s2(use_s2 = FALSE)
+
+select <- dplyr::select
+
+```
+
+ 
+Objective
+
+Nesta sessao, aprenderemos como criar e avaliar modelos de distribuição de espécies (SDMs) usando o pacote `biomod2` em R. Ao final desta sessão, você deverá ser capaz de preparar seus dados, construir um modelo e visualizar os resultados.
+
+
+# 1. Preparar dados
+
+## Preparar dados ambientais
+
+```{r}
+# Carregar dados ambientais
+env_data <- read.csv("env_data_gfdl_1996_2015.csv") %>% 
+  clean_names()
+
+
+spatial_df <- read.csv("~/Library/CloudStorage/OneDrive-UBC/Data/sdm_australes/Spatial/GEO_SPATIAL_META_MOL720GRID_V5.csv", header=T)
+
+
+coords <- env_data %>% 
+  dplyr::select(lon,lat)
+
+```
+
+
+## Preparar dados de ocorrencia 
+
+```{r}
+
+load("~/OneDrive - UBC/Data/sdm_australes/FACA/occurence/occurence_SP_234633.Rdata")
+
+
+obs_data <-data.frame(DATA) %>% 
+  clean_names() %>% 
+  mutate(lat = as.numeric(latitude),
+         lon = as.numeric(longitude)) %>% 
+  select(obs = aphiaid,lat,lon) %>% 
+  write_csv(.,"obs_data.csv")
+
+obs_data <- read_csv("obs_data.csv")
+
+obs_data_world <- coords %>% 
+  left_join(obs_data)
+  
+# Extract observations for the whole world (myResp)
+N<-dim(coords)
+OCC<-matrix(NA,N[1],1)
+OCC[obs_data$IDX,]<-obs_data$obs
+biomod_obs <- data.frame(OCC) # OJO CON ESTA BASE DE DATOS QUE ES LA QUE SE MODIFICA
+rm(OCC)
+
+
+#  ver distribuçao
+bind_cols(biomod_obs,coords) %>% 
+ggplot() +
+  geom_tile(
+    aes(
+      x = lon,
+      y = lat,
+      fill = OCC
+    )
+  )
+
+# Extract observations for the whole world (myResp)
+N<-dim(coords)
+OCC<-matrix(NA,N[1],1)
+OCC[obs_data$IDX,]<-df$OCC
+biomod_obs <- data.frame(OCC) # OJO CON ESTA BASE DE DATOS QUE ES LA QUE SE MODIFICA
+rm(OCC)
+
+# CLEAN DATASET
+obs_data <- biomod_obs %>%
+  bind_cols(grid_df) %>%
+  # MODIFICA EL CORTE LATITUDINAL Y LONGITUDINAL DE LA DATA
+  # filter(
+    # longitude < -40,
+         # longitude > -100,
+         # latitude < 0
+         # latitude > -60
+         # ) %>%
+  select(idmol720shp,1:3) %>%
+  arrange(idmol720shp)
+
+```
+
+## 2. Construçao do modelo
+
+### Opções globais do modelo (`BIOMOD_Modeling`)
+
+Esta seção seleciona as diferentes opções que queremos incluir em nosso modelo. 
+
+- *mds_algo*, observe que cada algoritmo tem suas próprias opções e configurações específicas para usuários mais avançados
+
+- *n_rep*, Quanto mais dados, mais repetições, até certo ponto (por exemplo, 5-6 repetições). Duas já sao boas, mas pode ficar confuso. 10 é extremamente bom mas muitos dados a serem analizados.
+
+- *data_sample*, representa a porcentagem de dados que você deseja usar para treinar o modelo. 
+
+- *eval_metric*, voce pode utilizar *ROC*, *TSS*, ou ambas
+
+- *model_thresh*, Determina o limite para seleção de "bons" modelos. Em geral, qualquer valor acima de 0,7 e bem recebido. Está relacionado ao `eval_metric`, enato precisa de um valor para cada metrica
+
+```{r}
+# Escolha os algoritmos a ser usados
+mds_algo <- c('GLM','GAM',"ANN") # 'MAXENT.Phillips','RF','FDA','CTA'
+
+# Número de repetições
+n_rep <- 3 # Número de repetições que desejo (seleção aleatória de variáveis) 
+
+# Porcentagem de dados para amostra
+data_sample <- 70 
+
+# Métrica de avaliação
+eval_metric <- c("ROC","TSS")
+
+# Opções globais BIOMOD_EnsembleModeling
+
+# Limite de inclusão do modelo
+model_thresh <- c(0.7,0.7) 
+
+```
+
+
+### Estrutura e opções do modelo
+
+```{r}
+
+
+coordinates(occurrences) <- ~longitude+latitude
+proj4string(occurrences) <- CRS(proj4string(env_data))
+
+
+biomod_data <- BIOMOD_Data(
+  resp.var = occurrences,
+  expl.var = env_data,
+  resp.name = "Species1",
+  PA.strategy = "random",
+  PA.nb.rep = 10,
+  PA.nb.absences = 100,
+  PA.max.dist = NULL
+)
+
+# Biomod formatted data
+# Note, occ_biomod_NA needs to have NA!
+myBiomodData <- BIOMOD_FormatingData(
+  resp.var = SpatialPointsDataFrame(env_da,
+                                    to_biomod_obs,
+                                    proj4string = CRS("+proj=longlat +datum=WGS84")
+  ), # Response variable
+  expl.var = SpatialPointsDataFrame(coords, 
+                                    to_biomod_env, 
+                                    proj4string = CRS("+proj=longlat +datum=WGS84")
+  ), #explanatory variable
+  resp.name = species_model$sci_name,
+  PA.nb.rep = 3, # NUmber of batch pseudo absent (at least 3)
+  PA.nb.absences = n_presence,
+  PA.strategy = 'random'
+)
+
+```
+
+### Execução do modelo
+
+```{r}
+
+
+
+models <- BIOMOD_Modeling(
+  data = biomod_data,
+  models = c("GLM", "RF", "ANN"), #Escolha os alrotimos que você deseja
+  models.options = BIOMOD_ModelingOptions(),
+  NbRunEval = 10,
+  DataSplit = 80,
+  Prevalence = 0.5
+)
+
+```
+
+
+# Avaliações de modelo
+
+```{r}
+
+
+eval <- BIOMOD_EnsembleModeling(models)
+print(eval)
+
+
+```
