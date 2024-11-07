@@ -1,0 +1,33 @@
+name,species,longitude,latitude,year,base,sptdist_filter
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-41.831787,-20.480428,2024,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-42.042302,-20.962874,2023,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-44.202463,-23.143886,2017,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-40.141983,-19.004421,2014,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-43.864444,-18.132778,2011,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-46.3525,-23.3775,2011,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-40.337778,-20.319444,2007,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-44.278444,-21.053,2003,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-47.419722,-23.71,2002,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-41.238444,-21.069861,2002,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-39.813694,-19.543444,2000,gbif,TRUE
+BOLD:AAD2964,Marmosops incanus,-41.26,-12.8,1998,gbif,TRUE
+BOLD:AAD2963,Marmosops incanus,-42.76,-17.13,1996,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-43.383737000000004,-18.150473,1996,gbif,TRUE
+BOLD:AAD2963,Marmosops incanus,-43.5,-20.08,1995,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-48.416667,-24.333333,1994,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-48.75,-22.16667,1994,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-43.8575,-20.499722,1993,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-41.833333,-19.833333,1993,gbif,TRUE
+BOLD:ABY4411,Marmosops incanus,-42.48,-20.71,1992,gbif,TRUE
+"Marmosops incanus (Lund, 1840)",Marmosops incanus,-40.610611,-19.930861,1970,gbif,TRUE
+Marmosops incanus,Marmosops incanus,-74.5813591852,-9.4708381371,2015,inat,TRUE
+Marmosops incanus,Marmosops incanus,-70.2216475457,9.2453525097,2024,inat,TRUE
+Marmosops incanus,Marmosops incanus,-73.8979941979,4.5536623908,2024,inat,TRUE
+Marmosops incanus,Marmosops incanus,-39.0564467758,-14.4172916153,2017,inat,TRUE
+Marmosops incanus,Marmosops incanus,-41.0746068388,-19.5084915842,2011,inat,TRUE
+Marmosops incanus,Marmosops incanus,-40.992098542,-20.4747820794,2019,inat,TRUE
+Marmosops incanus,Marmosops incanus,-44.571885808,-19.2853052241,2021,inat,TRUE
+Marmosops incanus,Marmosops incanus,-42.65,-19.7166667,1996,vertnet,TRUE
+Marmosops incanus,Marmosops incanus,-39,-15.35,1996,vertnet,TRUE
+Marmosops incanus,Marmosops incanus,-42.2,-16.6,1998,vertnet,TRUE
+Marmosops incanus,Marmosops incanus,-45.9000015,-23.6499996,1992,vertnet,TRUE
